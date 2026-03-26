@@ -5,7 +5,7 @@ from torch import nn
 from transformers import BertModel
 
 
-tokenizer = BertTokenizer.from_pretrained(r'D:\PythonProject3\BERT\bert-base-chinese')
+tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
 
 
 labels = {
@@ -31,7 +31,7 @@ id2label = {v: k for k, v in labels.items()}
 class BertClassifier(nn.Module):
     def __init__(self):
         super(BertClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained(r'D:\PythonProject3\BERT\bert-base-chinese')
+        self.bert = BertModel.from_pretrained('bert-base-chinese')
         self.dropout = nn.Dropout(0.3)
         self.linear = nn.Linear(768, 15)
 
