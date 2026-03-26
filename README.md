@@ -1,7 +1,9 @@
 # classify-bert-DEMO1
 基于BERT的今日头条新闻文本分类模型
-项目介绍
+## 项目介绍
 本项目使用 `bert-base-chinese` 预训练模型，对 15 类新闻文本进行自动分类，实现了从数据加载、模型训练到单句预测的完整流程，并通过 SwanLab 可视化实验过程。
+
+## 项目结构
 项目结构
 classify-bert-DEMO1/
 ├── model.py          # 模型训练与测试代码
