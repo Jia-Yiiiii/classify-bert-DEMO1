@@ -63,18 +63,20 @@
 ```text
 classify-bert-DEMO1/
 ├── DATA/                # 数据集文件夹
-│   ├── .gitkeep         # 占位文件
+│   ├── .gitkeep
 │   ├── train_3k.txt     # 训练集
 │   ├── dev_1k.txt       # 验证集
 │   └── test_1k.txt      # 测试集
 ├── config/              # 配置文件目录
-│   ├── .gitkeep         # 占位文件
+│   ├── .gitkeep
 │   ├── config.json      # 模型超参数配置
 │   └── label_map.json   # 标签映射文件
-├── model.py             # 训练好的模型保存目录
+├── model.py             # 模型定义文件
 ├── Predict.py           # 单句/批量文本分类预测程序
 ├── README.md            # 项目说明文档
-└── requirements.txt     # 依赖包列表
+├── requirements.txt     # 依赖包列表
+├── trainer.py           # 训练主程序（你之前的 run_trainer.py）
+└── utils.py             # 工具函数
 
 ```
 ### 快速开始
