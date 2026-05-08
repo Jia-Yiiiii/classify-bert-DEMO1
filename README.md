@@ -71,8 +71,7 @@ classify-bert-DEMO1/
 │   ├── .gitkeep         # 占位文件
 │   ├── config.json      # 模型超参数配置
 │   └── label_map.json   # 标签映射文件
-├── model.py/          # 训练好的模型保存目录
-├── Train.py             # 模型训练与验证主程序
+├── model.py             # 训练好的模型保存目录
 ├── Predict.py           # 单句/批量文本分类预测程序
 ├── README.md            # 项目说明文档
 └── requirements.txt     # 依赖包列表
