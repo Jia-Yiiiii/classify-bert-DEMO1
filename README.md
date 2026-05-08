@@ -11,41 +11,43 @@
 ---
 
 ## 📊 模型效果可视化
+
 ### 1. 训练过程曲线
-训练过程中，模型在训练集和验证集上的损失与准确率变化如下图所示：
 <p align="center">
   <img width="700" alt="训练过程曲线" src="https://github.com/user-attachments/assets/bc0cf990-76ab-40f1-adc8-45ef736d8b92">
 </p>
 
-### 2. 混淆矩阵
-混淆矩阵展示了模型在各类别上的预测情况，对角线上的值为预测正确的样本数：
+### 2. 混淆矩阵热力图
 <p align="center">
   <img width="700" alt="混淆矩阵" src="https://github.com/user-attachments/assets/eff7d3fe-6e6b-48e5-b33c-23f39d5d99b7">
 </p>
 
 ### 3. 各类别准确率
-每个类别的单独准确率表现：
 <p align="center">
   <img width="700" alt="各类别准确率" src="https://github.com/user-attachments/assets/73966cdc-ae66-4e77-abab-704683b3f540">
 </p>
 
-### 4. 标签分布
-数据集的类别样本数量分布：
+### 4. 数据集标签分布
 <p align="center">
   <img width="500" alt="标签分布" src="https://github.com/user-attachments/assets/a7c0cd06-e52c-4406-b2b3-12a1a4c7d9b0">
 </p>
 
 ### 5. 模型预测置信度分布
-模型对预测结果的置信度分布情况：
 <p align="center">
   <img width="700" alt="模型预测置信度分布" src="https://github.com/user-attachments/assets/40291400-a208-4127-ad98-bf54298cabe3">
 </p>
-## 📊 SWANLAB可视化
-https://swanlab.cn/@2225/bert-news-83+/runs/bv6g0niu0fdkffcgpnhav/chart
-<img width="942" height="377" alt="df89a79adb25eb6ee138db375ed00802" src="https://github.com/user-attachments/assets/43b80cd9-cb59-4e10-91f3-1e041ecf0688" />
-<img width="942" height="377" alt="7d863362da8f4a1a7537a674502da684" src="https://github.com/user-attachments/assets/303e0830-0767-4e99-acf9-85c46dd3971c" />
-<img width="456" height="375" alt="81383add4dd35b4da8d556444428fdbc" src="https://github.com/user-attachments/assets/fc3d81e0-c037-4189-b438-3f55df429c40" />
 
+### 6. 分类指标报告
+<p align="center">
+  <img width="800" alt="train_loss  train_acc" src="https://github.com/user-attachments/assets/43b80cd9-cb59-4e10-91f3-1e041ecf0688">
+</p>
+<p align="center">
+  <img width="800" alt="dev_loss dev_acc" src="https://github.com/user-attachments/assets/303e0830-0767-4e99-acf9-85c46dd3971c">
+</p>
+
+<p align="center">
+  <img width="450" alt="test_acc" src="https://github.com/user-attachments/assets/fc3d81e0-c037-4189-b438-3f55df429c40">
+</p>
 
 ---
 
