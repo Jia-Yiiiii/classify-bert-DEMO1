@@ -1,1 +1,10 @@
-
+torch>=1.10.0
+transformers>=4.20.0
+datasets
+scikit-learn
+matplotlib
+seaborn
+numpy
+pandas
+swanlab
+tqdm
