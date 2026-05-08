@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 class Config:
     model_name = "bert-base-chinese"
-    test_path = r"D:\4c\实战 Demo 指南\数据集\0.demo1文本分类\test_1k.txt"
+    test_path =r"./DATA/test_1k.txt"
     max_len = 100
     batch_size = 16
     num_classes = 15
