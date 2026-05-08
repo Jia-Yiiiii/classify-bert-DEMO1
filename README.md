@@ -69,7 +69,7 @@ classify-bert-DEMO1/
 │   └── test_1k.txt      # 测试集
 ├── config/              # 配置文件目录
 │   ├── .gitkeep
-│   ├── config.json      # 模型超参数配置
+│   ├── Bert_Config_exp1.json      # 模型超参数配置
 │   └── label_map.json   # 标签映射文件
 ├── model.py             # 模型定义文件
 ├── Predict.py           # 单句/批量文本分类预测程序
