@@ -1,8 +1,8 @@
 {
   "model_name": "bert-base-chinese",
-  "train_path": "D:\\4c\\实战 Demo 指南\\数据集\\0.demo1文本分类\\train_3k.txt",
-  "dev_path": "D:\\4c\\实战 Demo 指南\\数据集\\0.demo1文本分类\\dev_1k.txt",
-  "test_path": "D:\\4c\\实战 Demo 指南\\数据集\\0.demo1文本分类\\test_1k.txt",
+  "train_path": "./DATA/train_3k.txt",
+  "dev_path": "./DATA/dev_1k.txt",
+  "test_path": "./DATA/test_1k.txt",
   "max_len": 100,
   "batch_size": 16,
   "lr": 2e-5,
