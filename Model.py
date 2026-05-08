@@ -19,7 +19,7 @@ def set_seed(seed=42):
     torch.cuda.manual_seed_all(seed)
 set_seed()
 
-config_path = "./config/Bert_Config_exp1.json"
+config_path = "./config/config.json"
 with open(config_path, "r", encoding="utf-8") as f:
     config_dict = json.load(f)
 
