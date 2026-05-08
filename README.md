@@ -74,14 +74,14 @@
 ```text
 classify-bert-DEMO1/
 ├── DATA/                     # 数据集文件夹
+│   ├── .gitkeep              # 占位文件，用于保留空目录
 │   ├── train_3k.txt          # 训练集
 │   ├── dev_1k.txt            # 验证集
 │   └── test_1k.txt           # 测试集
-├── config/
-│   └── Bert_Config_exp1.json # 模型超参数配置文件
-├── main.py                   # 模型训练与测试主程序
-├── predict.py                # 单句新闻分类预测代码
-├── best_model.pth            # 训练好的最优模型权重文件
-├── label_map.json            # 标签映射文件
-├── requirements.txt          # 依赖库清单
+├── config/                   # 配置文件目录
+│   ├── .gitkeep              # 占位文件，用于保留空目录
+│   ├── Bert_Config_exp1.json # 模型超参数配置文件
+│   └── label_map.json        # 标签映射文件
+├── Model.py                  # 模型训练与测试主程序
+├── Predict.py                # 单句新闻分类预测代码
 └── README.md                 # 项目说明文档
