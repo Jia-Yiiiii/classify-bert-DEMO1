@@ -7,7 +7,7 @@
 本项目使用 `bert-base-chinese` 预训练模型，对 **15 类中文新闻文本**进行自动分类，实现了从数据加载、模型训练、模型评估到单句预测的完整流程，并通过 SwanLab 可视化实验过程。
 
 本项目在 3k 训练集上，最终在测试集上取得了 **83.65%** 的准确率，验证了BERT在中文文本分类任务上的有效性。
-
+模型文件 best_model.pth 因体积较大未上传，可自行训练生成。
 ---
 
 ## 📑 目录
@@ -60,6 +60,26 @@
 </p>
 
 ---
+### 6. SWANLAB可视化
+<img width="942" height="377" alt="df89a79adb25eb6ee138db375ed00802" src="https://github.com/user-attachments/assets/0f4fcc65-880c-4569-86f1-93b55586cdb1" />
+<img width="942" height="377" alt="7d863362da8f4a1a7537a674502da684" src="https://github.com/user-attachments/assets/91e4d574-cc48-4eed-9b61-feed9964c722" />
+<img width="456" height="375" alt="81383add4dd35b4da8d556444428fdbc" src="https://github.com/user-attachments/assets/09266721-7895-43cd-9d55-67ae9d1dd095" />
+---
+模型表现分析
+模型整体准确率 83.65%，表现优秀，但存在明显的短板类别，各类别表现差异较为突出。
+表现最差的三个类别
+news_agriculture（农业新闻）
+news_finance（财经新闻）
+stock（股票）
+指标偏低的主要原因
+样本数量极少，数据集存在严重的类别不平衡问题，模型缺乏足够的训练样本进行学习；
+三类文本特征相似度较高，模型难以精准区分，容易出现互相误判；
+样本不足导致模型学习不充分，泛化能力较弱。
+表现最好的三个类别
+news_car（汽车新闻）
+news_sports（体育新闻）
+news_edu（教育新闻）
+这类类别样本充足、文本特征清晰，模型能够充分学习核心特征，准确率均达到 88%~91%+，分类效果稳定优秀。
 
 ## 📁 项目结构
 ```tree
