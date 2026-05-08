@@ -176,7 +176,6 @@ for epoch in range(config.epochs):
 model.load_state_dict(torch.load("best_model.pth"))
 test_loss, test_acc, test_pred, test_label = eval_epoch(model, test_loader)
 
-print("\n" + "="*30)
 print(f"测试集最终准确率：{test_acc:.4f}")
 print("="*30)
 
