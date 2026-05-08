@@ -14,7 +14,7 @@ from utils import set_seed, train_epoch, eval_epoch
 set_seed()
 
 
-config_path = "./config_exp/config.json"
+config_path = "./config/Bert_Config_exp1.json"
 with open(config_path, "r", encoding="utf-8") as f:
     config_dict = json.load(f)
 
