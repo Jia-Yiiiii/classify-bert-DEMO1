@@ -40,7 +40,7 @@
 <p align="center">
   <img width="700" alt="模型预测置信度分布" src="https://github.com/user-attachments/assets/40291400-a208-4127-ad98-bf54298cabe3">
 </p>
-
+https://swanlab.cn/@2225/bert-news-83+/runs/bv6g0niu0fdkffcgpnhav/chart#am5jOWt2-dlNjTjI0dU8=
 ---
 
 ## 📁 项目结构
