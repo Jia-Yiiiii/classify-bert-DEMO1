@@ -74,3 +74,7 @@ classify-bert-DEMO1/
 ├── Model.py                  # 模型训练与测试主程序
 ├── Predict.py                # 单句新闻分类预测
 └── README.md                 # 项目说明文档
+
+```
+### 快速开始
+pip install -r requirements.txt
