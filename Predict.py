@@ -1,68 +1,139 @@
 import torch
+import torch.nn as nn
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
-from transformers import BertTokenizer
-from torch import nn
-from transformers import BertModel
+from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from torch.utils.data import Dataset, DataLoader
+from transformers import BertTokenizer, BertModel
+from tqdm import tqdm
 
 
-tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
+class Config:
+    model_name = "bert-base-chinese"
+    test_path = r"D:\4c\实战 Demo 指南\数据集\0.demo1文本分类\test_1k.txt"
+    max_len = 100
+    batch_size = 16
+    num_classes = 15
+    dropout_rate = 0.3
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+config = Config()
 
 
-labels = {
-    'news_story': 0,
-    'news_culture': 1,
-    'news_entertainment': 2,
-    'news_sports': 3,
-    'news_finance': 4,
-    'news_house': 5,
-    'news_car': 6,
-    'news_edu': 7,
-    'news_tech': 8,
-    'news_military': 9,
-    'news_travel': 10,
-    'news_world': 11,
-    'stock': 12,
-    'news_agriculture': 13,
-    'news_game': 14
-}
-id2label = {v: k for k, v in labels.items()}
+def load_data(file_path):
+    texts, labels = [], []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split('_!_')
+            if len(parts) >= 4:
+                texts.append(parts[3])
+                labels.append(parts[2])
+    return texts, labels
 
-# 模型结构
-class BertClassifier(nn.Module):
+test_texts, test_labels = load_data(config.test_path)
+all_labels = sorted(list(set(test_labels)))
+label2id = {l:i for i,l in enumerate(all_labels)}
+id2label = {i:l for i,l in enumerate(all_labels)}
+test_labels_id = [label2id[l] for l in test_labels]
+
+
+class BertWithDropout(nn.Module):
     def __init__(self):
-        super(BertClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained('bert-base-chinese')
-        self.dropout = nn.Dropout(0.3)
-        self.linear = nn.Linear(768, 15)
-
+        super().__init__()
+        self.bert = BertModel.from_pretrained(config.model_name)
+        self.dropout = nn.Dropout(config.dropout_rate)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, config.num_classes)
     def forward(self, input_ids, attention_mask):
-        _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
-        return self.linear(self.dropout(pooled_output))
+        out = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+        x = self.dropout(out.pooler_output)
+        logits = self.classifier(x)
+        return type('Out', (), {'logits': logits})()
 
-
-model = BertClassifier()
+tokenizer = BertTokenizer.from_pretrained(config.model_name)
+model = BertWithDropout().to(config.device)
+model.load_state_dict(torch.load("best_model.pth", map_location=config.device))
 model.eval()
 
-# 预测函数
-def predict_sentence(sentence):
-    device = torch.device("cpu")
-    encoded = tokenizer(
-        sentence,
-        padding='max_length',
-        max_length=128,
-        truncation=True,
-        return_tensors="pt"
-    )
-    with torch.no_grad():
-        out = model(
-            input_ids=encoded['input_ids'].to(device),
-            attention_mask=encoded['attention_mask'].to(device)
-        )
-    pred_class = out.argmax(1).item()
-    pred_label = id2label[pred_class]
-    print(f"\n输入：{sentence}")
-    print(f"分类：{pred_label} [{pred_class}]")
-    return pred_label
 
-predict_sentence("中国女排3比0战胜美国队夺冠！")
-predict_sentence("A股今天大涨，新能源板块领涨")
+class NewsDataset(Dataset):
+    def __init__(self, texts, labels):
+        self.texts = texts
+        self.labels = labels
+    def __len__(self):
+        return len(self.texts)
+    def __getitem__(self, idx):
+        enc = tokenizer(self.texts[idx], max_length=config.max_len, padding="max_length", truncation=True, return_tensors="pt")
+        return {"input_ids": enc["input_ids"].flatten(), "attention_mask": enc["attention_mask"].flatten(), "labels": torch.tensor(self.labels[idx])}
+
+test_loader = DataLoader(NewsDataset(test_texts, test_labels_id), batch_size=config.batch_size, shuffle=False)
+
+
+@torch.no_grad()
+def get_preds():
+    preds, trues, confs = [], [], []
+    for batch in test_loader:
+        input_ids = batch["input_ids"].to(config.device)
+        att_mask = batch["attention_mask"].to(config.device)
+        labels = batch["labels"]
+        logits = model(input_ids, att_mask).logits
+        conf, pred = torch.max(torch.softmax(logits, dim=1), dim=1)
+        preds.extend(pred.cpu().numpy())
+        trues.extend(labels.numpy())
+        confs.extend(conf.cpu().numpy())
+    return trues, preds, confs
+
+trues, preds, confs = get_preds()
+
+
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
+
+plt.figure(figsize=(12,10))
+cm = confusion_matrix(trues, preds)
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=all_labels, yticklabels=all_labels)
+plt.title('混淆矩阵 Confusion Matrix', fontsize=16)
+plt.xlabel('预测标签')
+plt.ylabel('真实标签')
+plt.tight_layout()
+plt.show()
+
+acc_per_class = []
+for i in range(len(all_labels)):
+    mask = np.array(trues) == i
+    if np.sum(mask) == 0:
+        acc_per_class.append(0)
+    else:
+        acc = accuracy_score(np.array(trues)[mask], np.array(preds)[mask])
+        acc_per_class.append(acc)
+
+plt.figure(figsize=(12,5))
+sns.barplot(x=all_labels, y=acc_per_class, palette='viridis')
+plt.title('各类别准确率', fontsize=14)
+plt.xticks(rotation=45, ha='right')
+plt.ylim(0,1)
+plt.tight_layout()
+plt.show()
+
+
+labels_count = np.bincount(trues, minlength=len(all_labels))
+plt.figure(figsize=(8,8))
+plt.pie(labels_count, labels=all_labels, autopct='%1.1f%%', startangle=90)
+plt.title('标签分布', fontsize=14)
+plt.tight_layout()
+plt.show()
+
+
+plt.figure(figsize=(10,5))
+sns.histplot(confs, bins=30, kde=True, color='orange')
+plt.title('模型预测置信度分布', fontsize=14)
+plt.xlabel('置信度')
+plt.tight_layout()
+plt.show()
+
+
+print("\n" + "="*50)
+print("最终测试集准确率：", accuracy_score(trues, preds))
+print("="*50)
+print(classification_report(trues, preds, target_names=all_labels, digits=4))
