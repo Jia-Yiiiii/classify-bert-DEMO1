@@ -1,164 +1,184 @@
-import torch
-import numpy as np
-from transformers import BertTokenizer
-import pandas as pd
-from torch import nn
-from transformers import BertModel
-from torch.optim import Adam
-from tqdm import tqdm
+import os
+os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+
 import swanlab
+import torch
+import torch.nn as nn
+import random
+import numpy as np
+import json
+from torch.utils.data import Dataset, DataLoader
+from transformers import BertTokenizer, BertModel, get_linear_schedule_with_warmup
+from sklearn.metrics import accuracy_score, classification_report
+from tqdm import tqdm
+
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+set_seed()
+
+config_path = "./config/Bert_Config_exp1.json"
+with open(config_path, "r", encoding="utf-8") as f:
+    config_dict = json.load(f)
 
 
-swanlab.init(
-    project="news-classify-bert",
-    config={
-        "data_num": 30000,
-        "epochs": 8,
-        "lr": 2e-5,
-        "batch_size": 8,
-        "max_len": 128,
-        "dropout": 0.3,
-        "device": "cpu"
-    }
-)
+class Config:
+    def __init__(self, config_dict):
+        for k, v in config_dict.items():
+            setattr(self, k, v)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+config = Config(config_dict)
 
 
-df = pd.read_csv('DATA/toutiao_cat_data.csv')
-df = df.head(30000)
+def load_data(file_path):
+    texts = []
+    labels = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split('_!_')
+            if len(parts) >= 4:
+                texts.append(parts[3])
+                labels.append(parts[2])
+    return texts, labels
 
-np.random.seed(42)
-df_train, df_val, df_test = np.split(df.sample(frac=1, random_state=42),
-                                     [int(.8 * len(df)), int(.9 * len(df))])
+train_texts, train_labels = load_data(config.train_path)
+dev_texts, dev_labels = load_data(config.dev_path)
+test_texts, test_labels = load_data(config.test_path)
 
-tokenizer = BertTokenizer.from_pretrained('bert-base-chinese')
+all_labels = sorted(list(set(train_labels + dev_labels + test_labels)))
+label2id = {lab: i for i, lab in enumerate(all_labels)}
+id2label = {i: lab for i, lab in enumerate(all_labels)}
 
-labels = {
-    'news_story': 0,
-    'news_culture': 1,
-    'news_entertainment': 2,
-    'news_sports': 3,
-    'news_finance': 4,
-    'news_house': 5,
-    'news_car': 6,
-    'news_edu': 7,
-    'news_tech': 8,
-    'news_military': 9,
-    'news_travel': 10,
-    'news_world': 11,
-    'stock': 12,
-    'news_agriculture': 13,
-    'news_game': 14
-}
+train_labels = [label2id[lab] for lab in train_labels]
+dev_labels = [label2id[lab] for lab in dev_labels]
+test_labels = [label2id[lab] for lab in test_labels]
 
 
-class Dataset(torch.utils.data.Dataset):
-    def __init__(self, df):
-        self.labels = [labels[label] for label in df['label']]
-        self.texts = [tokenizer(str(text),
-                                padding='max_length',
-                                max_length=128,
-                                truncation=True,
-                                return_tensors="pt") for text in df['text']]
+tokenizer = BertTokenizer.from_pretrained(config.model_name)
+
+class NewsDataset(Dataset):
+    def __init__(self, texts, labels):
+        self.texts = texts
+        self.labels = labels
 
     def __len__(self):
-        return len(self.labels)
+        return len(self.texts)
 
     def __getitem__(self, idx):
-        return self.texts[idx], self.labels[idx]
+        text = self.texts[idx]
+        enc = tokenizer(
+            text,
+            max_length=config.max_len,
+            padding="max_length",
+            truncation=True,
+            return_tensors="pt"
+        )
+        return {
+            "input_ids": enc["input_ids"].flatten(),
+            "attention_mask": enc["attention_mask"].flatten(),
+            "labels": torch.tensor(self.labels[idx], dtype=torch.long)
+        }
 
+train_loader = DataLoader(NewsDataset(train_texts, train_labels), batch_size=config.batch_size, shuffle=True)
+dev_loader = DataLoader(NewsDataset(dev_texts, dev_labels), batch_size=config.batch_size, shuffle=False)
+test_loader = DataLoader(NewsDataset(test_texts, test_labels), batch_size=config.batch_size, shuffle=False)
 
-class BertClassifier(nn.Module):
+class BertWithDropout(nn.Module):
     def __init__(self):
-        super(BertClassifier, self).__init__()
-        self.bert = BertModel.from_pretrained('./bert-base-chinese')
-        self.dropout = nn.Dropout(0.3)
-        self.linear = nn.Linear(768, 15)
+        super().__init__()
+        self.bert = BertModel.from_pretrained(config.model_name)
+        self.dropout = nn.Dropout(config.dropout_rate)
+        self.classifier = nn.Linear(self.bert.config.hidden_size, config.num_classes)
 
     def forward(self, input_ids, attention_mask):
-        _, pooled_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, return_dict=False)
-        return self.linear(self.dropout(pooled_output))
+        out = self.bert(input_ids, attention_mask=attention_mask)
+        x = self.dropout(out.pooler_output)
+        logits = self.classifier(x)
+        return type('Out', (), {'logits': logits})()
+
+model = BertWithDropout().to(config.device)
 
 
-def train(model, train_data, val_data, lr, epochs, batch_size):
-    train_loader = torch.utils.data.DataLoader(Dataset(train_data), batch_size=batch_size, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(Dataset(val_data), batch_size=batch_size)
+optimizer = torch.optim.AdamW(
+    model.parameters(),
+    lr=config.lr,
+    weight_decay=config.weight_decay
+)
+total_steps = len(train_loader) * config.epochs
+scheduler = get_linear_schedule_with_warmup(
+    optimizer,
+    num_warmup_steps=int(0.1 * total_steps),
+    num_training_steps=total_steps
+)
+criterion = nn.CrossEntropyLoss()
 
-    device = torch.device("cpu")
-    criterion = nn.CrossEntropyLoss()
-    optimizer = Adam(model.parameters(), lr=lr)
+def train_epoch(model, loader):
+    model.train()
+    total_loss, preds, labels = 0, [], []
+    for batch in tqdm(loader, desc="Train"):
+        input_ids = batch["input_ids"].to(config.device)
+        attention_mask = batch["attention_mask"].to(config.device)
+        label = batch["labels"].to(config.device)
 
-    model = model.to(device)
-    criterion = criterion.to(device)
+        optimizer.zero_grad()
+        out = model(input_ids, attention_mask)
+        loss = criterion(out.logits, label)
+        loss.backward()
+        optimizer.step()
+        scheduler.step()
 
-    for epoch in range(epochs):
-        model.train()
-        total_loss = 0
-        correct = 0
+        total_loss += loss.item()
+        preds.extend(torch.argmax(out.logits, dim=1).cpu().numpy())
+        labels.extend(label.cpu().numpy())
+    return total_loss / len(loader), accuracy_score(labels, preds)
 
-        for x, y in tqdm(train_loader):
-            y = y.to(device)
-            out = model(
-                input_ids=x['input_ids'].squeeze(1).to(device),
-                attention_mask=x['attention_mask'].squeeze(1).to(device)
-            )
+@torch.no_grad()
+def eval_epoch(model, loader):
+    model.eval()
+    total_loss, preds, labels = 0, [], []
+    for batch in tqdm(loader, desc="Eval"):
+        input_ids = batch["input_ids"].to(config.device)
+        attention_mask = batch["attention_mask"].to(config.device)
+        label = batch["labels"].to(config.device)
 
-            loss = criterion(out, y)
-            total_loss += loss.item()
-            correct += (out.argmax(1) == y).sum().item()
-
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-
-        train_acc = correct / len(train_data)
-        train_loss = total_loss / len(train_loader)
-
-        model.eval()
-        val_correct = 0
-        with torch.no_grad():
-            for x, y in val_loader:
-                y = y.to(device)
-                out = model(
-                    input_ids=x['input_ids'].squeeze(1).to(device),
-                    attention_mask=x['attention_mask'].squeeze(1).to(device)
-                )
-                val_correct += (out.argmax(1) == y).sum().item()
-        val_acc = val_correct / len(val_data)
-
-
-        swanlab.log({
-            "Train Acc": train_acc,
-            "Val Acc": val_acc,
-            "Train Loss": train_loss
-        }, step=epoch + 1)
-
-        print(f"Epoch {epoch + 1} | "
-              f"Train Acc: {train_acc:.3f} | "
-              f"Val Acc: {val_acc:.3f}")
+        out = model(input_ids, attention_mask)
+        loss = criterion(out.logits, label)
+        total_loss += loss.item()
+        preds.extend(torch.argmax(out.logits, dim=1).cpu().numpy())
+        labels.extend(label.cpu().numpy())
+    return total_loss / len(loader), accuracy_score(labels, preds), preds, labels
 
 
-model = BertClassifier()
+swanlab.init(project="bert-news-83+", config=config_dict)
+best_acc = 0.0  
 
+for epoch in range(config.epochs):
+    print(f"\n===== Epoch {epoch + 1} =====")
+    train_loss, train_acc = train_epoch(model, train_loader)
+    dev_loss, dev_acc, _, _ = eval_epoch(model, dev_loader)
+    if dev_acc > best_acc:
+        best_acc = dev_acc
+        torch.save(model.state_dict(), "best_model.pth")
+        print("已保存最优模型")
 
-train(model, df_train, df_val, lr=2e-5, epochs=8, batch_size=8)
+    swanlab.log({
+        "train/loss": train_loss,
+        "train/acc": train_acc,
+        "dev/loss": dev_loss,
+        "dev/acc": dev_acc
+    })
+    print(f"Train loss {train_loss:.4f} acc {train_acc:.4f}")
+    print(f"Dev loss {dev_loss:.4f} acc {dev_acc:.4f}")
 
+model.load_state_dict(torch.load("best_model.pth"))
+test_loss, test_acc, test_pred, test_label = eval_epoch(model, test_loader)
 
-def test(model, test_data):
-    loader = torch.utils.data.DataLoader(Dataset(test_data), batch_size=8)
-    device = torch.device("cpu")
-    model.to(device)
-    correct = 0
-    with torch.no_grad():
-        for x, y in loader:
-            y = y.to(device)
-            out = model(input_ids=x['input_ids'].squeeze(1).to(device),
-                        attention_mask=x['attention_mask'].squeeze(1).to(device))
-            correct += (out.argmax(1) == y).sum().item()
-    test_acc = correct / len(test_data)
-    print(f"\nTest Accuracy: {test_acc:.3f}")
+print("\n" + "="*30)
+print(f"测试集最终准确率：{test_acc:.4f}")
+print("="*30)
 
-    swanlab.log({"Test Acc": test_acc})
-
-
-test(model, df_test)
+swanlab.log({"test/acc": test_acc})
 swanlab.finish()
