@@ -74,7 +74,7 @@ classify-bert-DEMO1/
 ├── Predict.py           # 单句/批量文本分类预测程序
 ├── README.md            # 项目说明文档
 ├── requirements.txt     # 依赖包列表
-├── trainer.py           # 训练主程序（你之前的 run_trainer.py）
+├── trainer.py           # 训练主程序
 └── utils.py             # 工具函数
 
 ```
