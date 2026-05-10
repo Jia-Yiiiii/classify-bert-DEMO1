@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
+from sklearn.metrics import f1_score, precision_score, recall_score  
 from torch.utils.data import Dataset, DataLoader
 from transformers import BertTokenizer, BertModel
 from tqdm import tqdm
@@ -11,11 +12,11 @@ from tqdm import tqdm
 
 class Config:
     model_name = "bert-base-chinese"
-    test_path = r"D:\4c\实战 Demo 指南\数据集\0.demo1文本分类\test_1k.txt"
+    test_path = "DATA/test_1k.txt"
     max_len = 100
     batch_size = 16
     num_classes = 15
-    dropout_rate = 0.4  
+    dropout_rate = 0.4
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 config = Config()
@@ -52,7 +53,6 @@ class BertWithDropout(nn.Module):
 
 tokenizer = BertTokenizer.from_pretrained(config.model_name)
 model = BertWithDropout().to(config.device)
-
 model.load_state_dict(torch.load("best_model.pth", map_location=config.device))
 model.eval()
 
@@ -134,7 +134,19 @@ plt.tight_layout()
 plt.show()
 
 
-print("\n" + "="*50)
-print("最终测试集准确率：", accuracy_score(trues, preds))
-print("="*50)
+
+accuracy = accuracy_score(trues, preds)
+macro_precision = precision_score(trues, preds, average='macro')
+macro_recall = recall_score(trues, preds, average='macro')
+macro_f1 = f1_score(trues, preds, average='macro')
+
+print("\n" + "="*60)
+print("模型综合评估指标")
+print("="*60)
+print(f"总体准确率 Accuracy: {accuracy:.4f}")
+print(f"宏平均精确率 Precision: {macro_precision:.4f}")
+print(f"宏平均召回率 Recall: {macro_recall:.4f}")
+print(f"宏平均F1分数 Macro-F1: {macro_f1:.4f}")
+print("="*60)
+print("\n详细分类报告：")
 print(classification_report(trues, preds, target_names=all_labels, digits=4))
