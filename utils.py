@@ -1,8 +1,10 @@
+import os
 import random
 import numpy as np
 import torch
-from sklearn.metrics import accuracy_score
-from tqdm import tqdm
+import json
+from transformers import BertTokenizer
+
 
 def set_seed(seed=42):
     random.seed(seed)
@@ -10,43 +12,46 @@ def set_seed(seed=42):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-def train_epoch(model, loader, optimizer, scheduler, criterion, device):
-    model.train()
-    total_loss, preds, labels = 0, [], []
 
-    for batch in tqdm(loader, desc="Train"):
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        label = batch["labels"].to(device)
+def load_config(config_path):
+    with open(config_path, "r", encoding="utf-8") as f:
+        config_dict = json.load(f)
 
-        optimizer.zero_grad()
-        out = model(input_ids, attention_mask)
-        loss = criterion(out.logits, label)
-        loss.backward()
-        optimizer.step()
-        scheduler.step()
+    class BertConfig:
+        def __init__(self, config_dict):
+            for k, v in config_dict.items():
+                setattr(self, k, v)
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        total_loss += loss.item()
-        preds.extend(torch.argmax(out.logits, dim=1).cpu().numpy())
-        labels.extend(label.cpu().numpy())
+    return BertConfig(config_dict), config_dict
 
-    return total_loss / len(loader), accuracy_score(labels, preds)
 
-@torch.no_grad()
-def eval_epoch(model, loader, criterion, device):
-    model.eval()
-    total_loss, preds, labels = 0, [], []
+def load_data(file_path):
+    texts = []
+    labels = []
+    with open(file_path, 'r', encoding='utf-8') as f:
+        for line in f:
+            parts = line.strip().split('_!_')
+            if len(parts) >= 4:
+                texts.append(parts[3])
+                labels.append(parts[2])
+    return texts, labels
 
-    for batch in tqdm(loader, desc="Eval"):
-        input_ids = batch["input_ids"].to(device)
-        attention_mask = batch["attention_mask"].to(device)
-        label = batch["labels"].to(device)
 
-        out = model(input_ids, attention_mask)
-        loss = criterion(out.logits, label)
-        total_loss += loss.item()
+def collate_fn(batch, tokenizer, config):
+    texts = [item[0] for item in batch]
+    labels = [item[1] for item in batch]
 
-        preds.extend(torch.argmax(out.logits, dim=1).cpu().numpy())
-        labels.extend(label.cpu().numpy())
+    enc = tokenizer(
+        texts,
+        max_length=config.max_len,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt"
+    )
 
-    return total_loss / len(loader), accuracy_score(labels, preds), preds, labels
+    return {
+        "input_ids": enc["input_ids"],
+        "attention_mask": enc["attention_mask"],
+        "labels": torch.tensor(labels, dtype=torch.long)
+    }
