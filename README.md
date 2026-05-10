@@ -14,7 +14,9 @@
 
 ## 模型效果可视化
 
-### 1. 训练过程曲线
+### 1. 模型指标
+<img width="543" height="127" alt="image" src="https://github.com/user-attachments/assets/a22edb28-f7bc-4865-ac5e-337e8f315332" />
+
 <img width="687" height="715" alt="05354f6b3a179f1955c004cd06aab7c0" src="https://github.com/user-attachments/assets/cd2ef39c-d59f-4f55-affd-c9d8eea283e0" />
 
 ### 2. 混淆矩阵
@@ -75,7 +77,8 @@
 
 - **实验 2（lr=2e-5 + dropout=0.3）**
   收敛更快，拟合能力更强，**测试集精度最高（83.64%）**，为本项目最优配置。
-
+  
+综上所述本实验选择实验 1（lr=1e-5 + dropout=0.4）
 ---
 
 ## 模型表现分析
