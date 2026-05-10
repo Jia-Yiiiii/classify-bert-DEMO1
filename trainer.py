@@ -48,7 +48,6 @@ def eval_epoch(model, loader, criterion, config):
 
 def main():
     set_seed(42)
-    # 【唯一修改】config → configs
     config, config_dict = load_config("./configs/Bert_Config_exp1.json")
     train_texts, train_labels = load_data(config.train_path)
     dev_texts, dev_labels = load_data(config.dev_path)
