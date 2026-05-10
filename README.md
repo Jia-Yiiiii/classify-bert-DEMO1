@@ -46,7 +46,7 @@
 | num_classes | 15 |
 
 ![SwanLab1](https://github.com/user-attachments/assets/1cb09e98-05e4-4735-a334-505ba9b2f628)
-![SwanLab2](https://github.com/user-attachments/assets/d6a72bde-6eb1-461e-99c7-9e471e22ceb2)
+<img width="1015" height="352" alt="8675df908b9bd34888380273ec9111d2" src="https://github.com/user-attachments/assets/1e74d048-ea70-40ca-901b-18650082baec" />
 ![SwanLab3](https://github.com/user-attachments/assets/5540f44a-57e0-4252-9d27-d00e80e8a9c4)
 
 ---
