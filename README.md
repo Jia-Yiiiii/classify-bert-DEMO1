@@ -35,6 +35,21 @@
 
 ### 6. SwanLab 可视化
 ## 超参数配置
+| 参数 | 取值 |
+| ---- | ---- |
+| 预训练模型 | bert‑base‑chinese |
+| max_len | 100 |
+| batch_size | 16 |
+| lr | 1e‑5 |
+| dropout_rate | 0.4 |
+| weight_decay | 1e‑4 |
+| epochs | 12 |
+| num_classes | 15 |
+<img width="985" height="345" alt="4a3b3b667c5ee35d1aa94cc78a08d763" src="https://github.com/user-attachments/assets/1cb09e98-05e4-4735-a334-505ba9b2f628" />
+<img width="1015" height="352" alt="8675df908b9bd34888380273ec9111d2" src="https://github.com/user-attachments/assets/d6a72bde-6eb1-461e-99c7-9e471e22ceb5" />
+<img width="482" height="342" alt="551cf303aee6e96cfc4e6865d8eb321f" src="https://github.com/user-attachments/assets/5540f44a-57e0-4252-9d27-d00e80e8a9c4" />
+
+## 超参数配置
 | 超参数 | 数值 |
 | ---- | ---- |
 | 预训练模型 | bert‑base‑chinese |
