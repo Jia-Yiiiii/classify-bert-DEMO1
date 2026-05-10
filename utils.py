@@ -5,7 +5,6 @@ import torch
 import json
 from transformers import BertTokenizer
 
-
 def set_seed(seed=42):
     random.seed(seed)
     np.random.seed(seed)
