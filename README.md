@@ -16,21 +16,35 @@
 ##  模型效果可视化
 
 ### 1. 训练过程曲线
-![训练过程曲线](https://github.com/user-attachments/assets/bc0cf990-76ab-40f1-adc8-45ef736d8b92)
+<img width="687" height="715" alt="05354f6b3a179f1955c004cd06aab7c0" src="https://github.com/user-attachments/assets/cd2ef39c-d59f-4f55-affd-c9d8eea283e0" />
 
 ### 2. 混淆矩阵
-![混淆矩阵](https://github.com/user-attachments/assets/eff7d3fe-6e6b-48e5-b33c-23f39d5d99b7)
+<img width="1438" height="960" alt="811b4f5f5cef134d52702b76594b2ad1" src="https://github.com/user-attachments/assets/2229c75b-0aef-4497-949c-d2ac966b7765" />
+
 
 ### 3. 各类别准确率
-![各类别准确率](https://github.com/user-attachments/assets/73966cdc-ae66-4e77-abab-704683b3f540)
+<img width="1482" height="611" alt="9e36662888a0a6cee657a975367fd8f1" src="https://github.com/user-attachments/assets/60ee932f-6c76-4490-a3b8-a3e8dec18fa7" />
+
 
 ### 4. 标签分布
-![标签分布](https://github.com/user-attachments/assets/a7c0cd06-e52c-4406-b2b3-12a1a4c7d9b0)
+<img width="967" height="925" alt="3ba5c9c2db08bb8e16099c10fdcf6125" src="https://github.com/user-attachments/assets/c2010f4d-e811-4c00-aa82-2665e4dc5386" />
+
 
 ### 5. 模型预测置信度分布
-![模型预测置信度分布](https://github.com/user-attachments/assets/40291400-a208-4127-ad98-bf54298cabe3)
+<img width="1237" height="615" alt="697f1dcd67523ba784044fd47c17c711" src="https://github.com/user-attachments/assets/f9dc29d6-b47b-485c-adde-6a3cf70ae346" />
 
 ### 6. SwanLab 可视化
+## 超参数配置
+| 超参数 | 数值 |
+| ---- | ---- |
+| 预训练模型 | bert‑base‑chinese |
+| max_len | 100 |
+| batch_size | 16 |
+| learning_rate | 2e‑5 |
+| dropout_rate | 0.3 |
+| weight_decay | 1e‑4 |
+| epochs | 12 |
+| num_classes | 15 |
 ![SwanLab1](https://github.com/user-attachments/assets/0f4fcc65-880c-4569-86f1-93b55586cdb1)
 ![SwanLab2](https://github.com/user-attachments/assets/91e4d574-cc48-4eed-9b61-feed9964c722)
 ![SwanLab3](https://github.com/user-attachments/assets/09266721-7895-43cd-9d55-67ae9d1dd095)
