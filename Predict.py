@@ -11,11 +11,11 @@ from tqdm import tqdm
 
 class Config:
     model_name = "bert-base-chinese"
-    test_path =r"./DATA/test_1k.txt"
+    test_path = r"D:\4c\实战 Demo 指南\数据集\0.demo1文本分类\test_1k.txt"
     max_len = 100
     batch_size = 16
     num_classes = 15
-    dropout_rate = 0.3
+    dropout_rate = 0.4  
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 config = Config()
@@ -52,6 +52,7 @@ class BertWithDropout(nn.Module):
 
 tokenizer = BertTokenizer.from_pretrained(config.model_name)
 model = BertWithDropout().to(config.device)
+
 model.load_state_dict(torch.load("best_model.pth", map_location=config.device))
 model.eval()
 
