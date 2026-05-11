@@ -53,7 +53,7 @@
 
 ---
 
-### 实验 2（最优精度）
+### 实验 2
 | 超参数 | 数值 |
 | ---- | ---- |
 | 预训练模型 | bert‑base‑chinese |
@@ -64,10 +64,10 @@
 | weight_decay | 1e‑4 |
 | epochs | 12 |
 | num_classes | 15 |
+<img width="996" height="315" alt="096097c9982a784b8879626d8db91e14" src="https://github.com/user-attachments/assets/e19cee15-e350-4fa0-876a-1283f5dad279" />
+<img width="1082" height="337" alt="image" src="https://github.com/user-attachments/assets/db78eae5-c368-46ca-bc27-c1d00ed9aebb" />
+<img width="596" height="342" alt="image" src="https://github.com/user-attachments/assets/24e2bb5b-b852-4499-a4d5-f6c2458c2957" />
 
-![SwanLab1](https://github.com/user-attachments/assets/0f4fcc65-880c-4569-86f1-93b55586cdb1)
-![SwanLab2](https://github.com/user-attachments/assets/91e4d574-cc48-4eed-9b61-feed9964c722)
-![SwanLab3](https://github.com/user-attachments/assets/09266721-7895-43cd-9d55-67ae9d1dd095)
 
 ---
 
@@ -75,8 +75,8 @@
 - **实验 1（lr=1e-5 + dropout=0.4）**
   训练过程极其稳定，几乎不过拟合，验证曲线平滑，**泛化能力最优**。
 
-- **实验 2（lr=2e-5 + dropout=0.3）**
-  收敛更快，拟合能力更强，**测试集精度最高（83.64%）**，为本项目最优配置。
+
+- 
   
 综上所述本实验选择实验 1（lr=1e-5 + dropout=0.4）
 ---
