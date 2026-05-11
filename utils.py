@@ -22,8 +22,3 @@ def load_config(config_path):
 
     return BertConfig(config_dict), config_dict
 
-def collate_fn(batch, tokenizer, config):
-    texts = [item[0] for item in batch]
-    labels = [item[1] for item in batch]
-    enc = tokenizer(texts,max_length=config.max_len,padding="max_length",truncation=True,return_tensors="pt")
-    return {"input_ids": enc["input_ids"],"attention_mask": enc["attention_mask"],"labels": torch.tensor(labels, dtype=torch.long)}
