@@ -1,9 +1,11 @@
+import torch
 from torch.utils.data import Dataset
 
 class NewsDataset(Dataset):
-    def __init__(self, file_path, tokenizer, config):
+    def __init__(self, file_path, tokenizer=None, config=None):
         self.texts = []
         self.labels = []
+        self.label2id = {}  
         self.tokenizer = tokenizer
         self.config = config
 
@@ -20,10 +22,10 @@ class NewsDataset(Dataset):
     def __getitem__(self, idx):
         return self.texts[idx], self.labels[idx]
 
-  
     def collate_fn(self, batch):
         texts = [item[0] for item in batch]
-        labels = [item[1] for item in batch]
+        labels = [self.label2id[item[1]] for item in batch]
+        
         enc = self.tokenizer(
             texts,
             max_length=self.config.max_len,
@@ -31,6 +33,7 @@ class NewsDataset(Dataset):
             truncation=True,
             return_tensors="pt"
         )
+        
         return {
             "input_ids": enc["input_ids"],
             "attention_mask": enc["attention_mask"],
