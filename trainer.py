@@ -9,8 +9,8 @@ from transformers import BertTokenizer, get_linear_schedule_with_warmup
 from sklearn.metrics import accuracy_score, classification_report
 from tqdm import tqdm
 
-from utils import set_seed, load_config, collate_fn
-from data_process import load_data, NewsDataset
+from utils import set_seed, load_config
+from data_process import NewsDataset
 from model import BertWithDropout
 
 def train_epoch(model, loader, optimizer, scheduler, criterion, config):
@@ -49,19 +49,39 @@ def eval_epoch(model, loader, criterion, config):
 def main():
     set_seed(42)
     config, config_dict = load_config("./configs/Bert_Config_exp1.json")
-    train_texts, train_labels = load_data(config.train_path)
-    dev_texts, dev_labels = load_data(config.dev_path)
-    test_texts, test_labels = load_data(config.test_path)
-    all_labels = sorted(list(set(train_labels + dev_labels + test_labels)))
-    label2id = {lab: i for i, lab in enumerate(all_labels)}
-    id2label = {i: lab for i, lab in enumerate(all_labels)}
-    train_labels = [label2id[lab] for lab in train_labels]
-    dev_labels = [label2id[lab] for lab in dev_labels]
-    test_labels = [label2id[lab] for lab in test_labels]
     tokenizer = BertTokenizer.from_pretrained(config.model_name)
-    train_loader = DataLoader(NewsDataset(train_texts, train_labels),batch_size=config.batch_size,shuffle=True,collate_fn=lambda batch: collate_fn(batch, tokenizer, config))
-    dev_loader = DataLoader(NewsDataset(dev_texts, dev_labels),batch_size=config.batch_size,shuffle=False,collate_fn=lambda batch: collate_fn(batch, tokenizer, config))
-    test_loader = DataLoader(NewsDataset(test_texts, test_labels),batch_size=config.batch_size,shuffle=False,collate_fn=lambda batch: collate_fn(batch, tokenizer, config))
+    train_dataset = NewsDataset(config.train_path, tokenizer, config)
+    dev_dataset = NewsDataset(config.dev_path, tokenizer, config)
+    test_dataset = NewsDataset(config.test_path, tokenizer, config)
+
+
+    all_labels = sorted({lab for _, lab in train_dataset} | {lab for _, lab in dev_dataset})
+    label2id = {lab: i for i, lab in enumerate(all_labels)}
+    train_dataset.label2id = label2id
+    dev_dataset.label2id = label2id
+    test_dataset.label2id = label2id
+
+    
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=config.batch_size,
+        shuffle=True,
+        collate_fn=train_dataset.collate_fn 
+    )
+    dev_loader = DataLoader(
+        dev_dataset,
+        batch_size=config.batch_size,
+        shuffle=False,
+        collate_fn=dev_dataset.collate_fn
+    )
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=config.batch_size,
+        shuffle=False,
+        collate_fn=test_dataset.collate_fn
+    )
+
+
     model = BertWithDropout(config).to(config.device)
     optimizer = torch.optim.AdamW(model.parameters(),lr=config.lr,weight_decay=config.weight_decay)
     total_steps = len(train_loader) * config.epochs
