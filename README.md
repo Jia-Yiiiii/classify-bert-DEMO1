@@ -18,6 +18,26 @@
 <img width="543" height="127" alt="image" src="https://github.com/user-attachments/assets/a22edb28-f7bc-4865-ac5e-337e8f315332" />
 
 <img width="687" height="715" alt="05354f6b3a179f1955c004cd06aab7c0" src="https://github.com/user-attachments/assets/cd2ef39c-d59f-4f55-affd-c9d8eea283e0" />
+类别	precision	recall	f1-score	support
+news_agriculture	0.7679	0.8113	0.7890	53
+news_car	0.8774	0.9394	0.9073	99
+news_culture	0.9143	0.8312	0.8707	77
+news_edu	0.8608	0.9189	0.8889	74
+news_entertainment	0.8716	0.8796	0.8756	108
+news_finance	0.7432	0.7432	0.7432	74
+news_game	0.7609	0.8750	0.8140	80
+news_house	0.8864	0.7959	0.8387	49
+news_military	0.7826	0.7826	0.7826	69
+news_sports	0.9570	0.8641	0.9082	103
+news_story	0.7333	0.6471	0.6875	17
+news_tech	0.7826	0.7895	0.7860	114
+news_travel	0.8644	0.8644	0.8644	59
+news_world	0.7671	0.7568	0.7619	74
+stock	0.9000	0.6429	0.7500	14
+				
+accuracy			0.8336	1064
+macro avg	0.8313	0.8095	0.8179	1064
+weighted avg	0.8362	0.8336	0.8336	1064
 
 ### 2. 混淆矩阵
 <img width="1438" height="960" alt="811b4f5f5cef134d52702b76594b2ad1" src="https://github.com/user-attachments/assets/2229c75b-0aef-4497-949c-d2ac966b7765" />
