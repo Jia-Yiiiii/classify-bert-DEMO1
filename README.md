@@ -15,7 +15,12 @@
 ## 模型效果可视化
 
 ### 1. 模型指标
-<img width="543" height="127" alt="image" src="https://github.com/user-attachments/assets/a22edb28-f7bc-4865-ac5e-337e8f315332" />
+### 模型整体指标
+- 总体准确率 (Accuracy): 0.8336
+- 宏平均精确率 (Macro-Precision): 0.8313
+- 宏平均召回率 (Macro-Recall): 0.8095
+- 宏平均F1分数 (Macro-F1): 0.8179
+- 最终测试集准确率: 0.8336466165413534
 
 <img width="687" height="715" alt="05354f6b3a179f1955c004cd06aab7c0" src="https://github.com/user-attachments/assets/cd2ef39c-d59f-4f55-affd-c9d8eea283e0" />
 | 类别 | precision | recall | f1-score | support |
