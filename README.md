@@ -22,7 +22,7 @@
 - 宏平均F1分数 (Macro-F1): 0.8179
 - 最终测试集准确率: 0.8336466165413534
 
-<img width="687" height="715" alt="05354f6b3a179f1955c004cd06aab7c0" src="https://github.com/user-attachments/assets/cd2ef39c-d59f-4f55-affd-c9d8eea283e0" />
+
 | 类别 | precision | recall | f1-score | support |
 | :--- | :---: | :---: | :---: | :---: |
 | news_agriculture | 0.7679 | 0.8113 | 0.7890 | 53 |
