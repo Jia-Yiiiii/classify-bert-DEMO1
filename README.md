@@ -11,6 +11,8 @@
 模型文件 `best_model.pth` 因体积较大未上传，可自行训练生成。
 
 ---
+
+---
 ## 数据集
 
 本项目使用今日头条新闻标题分类数据集。
@@ -26,6 +28,9 @@
 | train_3k.txt | 3000 | 训练集 |
 | dev_1k.txt | 1000 | 验证集 |
 | test_1k.txt | 1064 | 测试集 | 
+---
+
+---
 
 ## 模型效果可视化
 
@@ -156,3 +161,15 @@ classify-bert-DEMO1/
 ├── utils.py                 # 工具函数
 ├── requirements.txt         # 依赖
 └── README.md                # 项目说明
+---
+---
+## 环境配置
+使用 Conda 创建独立环境，版本严格匹配：
+```bash
+conda create -n bert-text-cls python=3.6
+conda activate bert-text-cls
+torch==1.10.2
+transformers==4.16.2
+scikit-learn==0.19.1
+tqdm==4.64.1
+numpy==1.19.5
