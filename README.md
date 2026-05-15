@@ -11,7 +11,15 @@
 模型文件 `best_model.pth` 因体积较大未上传，可自行训练生成。
 
 ---
+## 数据集
 
+本项目使用今日头条新闻标题分类数据集。
+
+- 数据来源：今日头条客户端
+- 采集时间：2018 年 5 月
+- 下载地址：[toutiao-text-classfication-dataset](https://github.com/aceimnorstuvwxz/toutiao-text-classfication-dataset)
+- 分类数量：15 类
+  
 ## 模型效果可视化
 
 ### 1. 模型指标
