@@ -22,12 +22,12 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, config):
         label = batch["labels"].to(config.device)
         optimizer.zero_grad()
         out = model(input_ids, attention_mask)
-        loss = criterion(out.logits, label)
+        loss = criterion(out, label)
         loss.backward()
         optimizer.step()
         scheduler.step()
         total_loss += loss.item()
-        preds.extend(torch.argmax(out.logits, dim=1).cpu().numpy())
+        preds.extend(torch.argmax(out, dim=1).cpu().numpy())
         labels.extend(label.cpu().numpy())
     return total_loss / len(loader), accuracy_score(labels, preds)
 
@@ -40,9 +40,9 @@ def eval_epoch(model, loader, criterion, config):
         attention_mask = batch["attention_mask"].to(config.device)
         label = batch["labels"].to(config.device)
         out = model(input_ids, attention_mask)
-        loss = criterion(out.logits, label)
+        loss = criterion(out, label)
         total_loss += loss.item()
-        preds.extend(torch.argmax(out.logits, dim=1).cpu().numpy())
+        preds.extend(torch.argmax(out, dim=1).cpu().numpy())
         labels.extend(label.cpu().numpy())
     return total_loss / len(loader), accuracy_score(labels, preds), preds, labels
 
@@ -58,7 +58,6 @@ def main():
     label2id = {lab: i for i, lab in enumerate(all_labels)}
     id2label = {i: lab for i, lab in enumerate(all_labels)} 
 
-  
     import json
     import os
     os.makedirs("data", exist_ok=True)
@@ -66,7 +65,6 @@ def main():
         json.dump(label2id, f, ensure_ascii=False, indent=2)
     with open("data/id2label.json", "w", encoding="utf-8") as f:
         json.dump(id2label, f, ensure_ascii=False, indent=2)
-
 
     train_dataset.label2id = label2id
     dev_dataset.label2id = label2id
@@ -117,3 +115,6 @@ def main():
     print("="*30)
     swanlab.log({"test/acc": test_acc})
     swanlab.finish()
+
+if __name__ == "__main__":
+    main()
