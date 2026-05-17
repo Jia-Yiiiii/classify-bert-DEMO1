@@ -54,14 +54,24 @@ def main():
     dev_dataset = NewsDataset(config.dev_path, tokenizer, config)
     test_dataset = NewsDataset(config.test_path, tokenizer, config)
 
-
     all_labels = sorted({lab for _, lab in train_dataset} | {lab for _, lab in dev_dataset})
     label2id = {lab: i for i, lab in enumerate(all_labels)}
+    id2label = {i: lab for i, lab in enumerate(all_labels)} 
+
+  
+    import json
+    import os
+    os.makedirs("data", exist_ok=True)
+    with open("data/label2id.json", "w", encoding="utf-8") as f:
+        json.dump(label2id, f, ensure_ascii=False, indent=2)
+    with open("data/id2label.json", "w", encoding="utf-8") as f:
+        json.dump(id2label, f, ensure_ascii=False, indent=2)
+
+
     train_dataset.label2id = label2id
     dev_dataset.label2id = label2id
     test_dataset.label2id = label2id
 
-    
     train_loader = DataLoader(
         train_dataset,
         batch_size=config.batch_size,
@@ -80,7 +90,6 @@ def main():
         shuffle=False,
         collate_fn=test_dataset.collate_fn
     )
-
 
     model = BertWithDropout(config).to(config.device)
     optimizer = torch.optim.AdamW(model.parameters(),lr=config.lr,weight_decay=config.weight_decay)
@@ -108,5 +117,3 @@ def main():
     print("="*30)
     swanlab.log({"test/acc": test_acc})
     swanlab.finish()
-if __name__ == "__main__":
-    main()
