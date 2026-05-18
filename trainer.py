@@ -21,7 +21,7 @@ def train_epoch(model, loader, optimizer, scheduler, criterion, config):
         attention_mask = batch["attention_mask"].to(config.device)
         label = batch["labels"].to(config.device)
         optimizer.zero_grad()
-        out = model(input_ids, attention_mask)
+        out = model(input_ids=input_ids, attention_mask=attention_mask)
         loss = criterion(out, label)
         loss.backward()
         optimizer.step()
@@ -39,7 +39,8 @@ def eval_epoch(model, loader, criterion, config):
         input_ids = batch["input_ids"].to(config.device)
         attention_mask = batch["attention_mask"].to(config.device)
         label = batch["labels"].to(config.device)
-        out = model(input_ids, attention_mask)
+        out = model(input_ids=input_ids, attention_mask=attention_mask)
+        
         loss = criterion(out, label)
         total_loss += loss.item()
         preds.extend(torch.argmax(out, dim=1).cpu().numpy())
@@ -59,7 +60,6 @@ def main():
     id2label = {i: lab for i, lab in enumerate(all_labels)} 
 
     import json
-    import os
     os.makedirs("data", exist_ok=True)
     with open("data/label2id.json", "w", encoding="utf-8") as f:
         json.dump(label2id, f, ensure_ascii=False, indent=2)
