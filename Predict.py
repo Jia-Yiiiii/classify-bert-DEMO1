@@ -11,6 +11,7 @@ from tqdm import tqdm
 import json
 import os
 
+
 class Config:
     model_name = "bert-base-chinese"
     test_path = "DATA/test_1k.txt"
@@ -20,13 +21,14 @@ class Config:
     dropout_rate = 0.4
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 config = Config()
 
 
 def load_data(file_path):
     texts, labels = [], []
     with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:  
+        for line in f:
             line = line.strip()
             if len(line) == 0:
                 continue
@@ -39,7 +41,6 @@ def load_data(file_path):
 
 test_texts, test_labels = load_data(config.test_path)
 
-
 with open("data/label2id.json", "r", encoding="utf-8") as f:
     label2id = json.load(f)
 with open("data/id2label.json", "r", encoding="utf-8") as f:
@@ -47,7 +48,6 @@ with open("data/id2label.json", "r", encoding="utf-8") as f:
 
 all_labels = list(label2id.keys())
 test_labels_id = [label2id[l] for l in test_labels]
-
 
 
 class BertWithDropout(nn.Module):
@@ -61,7 +61,7 @@ class BertWithDropout(nn.Module):
         out = self.bert(input_ids=input_ids, attention_mask=attention_mask)
         x = self.dropout(out.pooler_output)
         logits = self.classifier(x)
-        return logits 
+        return logits
 
 
 tokenizer = BertTokenizer.from_pretrained(config.model_name)
@@ -104,7 +104,7 @@ def get_preds():
         att_mask = batch["attention_mask"].to(config.device)
         labels = batch["labels"]
 
-        logits = model(input_ids, att_mask) 
+        logits = model(input_ids, att_mask)
 
         conf, pred = torch.max(torch.softmax(logits, dim=1), dim=1)
         preds.extend(pred.cpu().numpy())
@@ -114,6 +114,38 @@ def get_preds():
 
 
 trues, preds, confs = get_preds()
+
+
+
+@torch.no_grad()
+def predict_single(text):
+    inputs = tokenizer(
+        text,
+        max_length=config.max_len,
+        padding="max_length",
+        truncation=True,
+        return_tensors="pt"
+    )
+
+   
+    input_ids = inputs["input_ids"].to(config.device)
+    attention_mask = inputs["attention_mask"].to(config.device)
+
+    logits = model(input_ids, attention_mask)
+    pred_id = torch.argmax(logits, dim=1).item()
+    label = id2label[str(pred_id)]
+    return label
+
+
+
+if __name__ == "__main__":
+    demo_text = "神舟十八号载人飞船成功发射，圆满完成任务！"
+    pred_label = predict_single(demo_text)
+    print(f"输入文本：{demo_text}")
+    print(f"预测类别：{pred_label}")
+    print("=" * 50 + "\n")
+
+
 
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
@@ -168,13 +200,13 @@ macro_precision = precision_score(trues, preds, average='macro')
 macro_recall = recall_score(trues, preds, average='macro')
 macro_f1 = f1_score(trues, preds, average='macro')
 
-print("\n" + "="*60)
+print("\n" + "=" * 60)
 print("模型综合评估指标")
-print("="*60)
+print("=" * 60)
 print(f"总体准确率 Accuracy: {accuracy:.4f}")
 print(f"宏平均精确率 Precision: {macro_precision:.4f}")
 print(f"宏平均召回率 Recall: {macro_recall:.4f}")
 print(f"宏平均F1分数 Macro-F1: {macro_f1:.4f}")
-print("="*60)
+print("=" * 60)
 print("\n详细分类报告：")
 print(classification_report(trues, preds, target_names=all_labels, digits=4))
