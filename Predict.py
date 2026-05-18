@@ -50,6 +50,7 @@ all_labels = list(label2id.keys())
 test_labels_id = [label2id[l] for l in test_labels]
 
 
+
 class BertWithDropout(nn.Module):
     def __init__(self, config):
         super().__init__()
@@ -57,8 +58,9 @@ class BertWithDropout(nn.Module):
         self.dropout = nn.Dropout(config.dropout_rate)
         self.classifier = nn.Linear(self.bert.config.hidden_size, config.num_classes)
 
-    def forward(self, input_ids, attention_mask):
-        out = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+
+    def forward(self, **kwargs):
+        out = self.bert(**kwargs)
         x = self.dropout(out.pooler_output)
         logits = self.classifier(x)
         return logits
@@ -103,8 +105,7 @@ def get_preds():
         input_ids = batch["input_ids"].to(config.device)
         att_mask = batch["attention_mask"].to(config.device)
         labels = batch["labels"]
-
-        logits = model(input_ids, att_mask)
+        logits = model(input_ids=input_ids, attention_mask=att_mask)
 
         conf, pred = torch.max(torch.softmax(logits, dim=1), dim=1)
         preds.extend(pred.cpu().numpy())
@@ -125,17 +126,13 @@ def predict_single(text):
         padding="max_length",
         truncation=True,
         return_tensors="pt"
-    )
+    ).to(config.device)
 
-   
-    input_ids = inputs["input_ids"].to(config.device)
-    attention_mask = inputs["attention_mask"].to(config.device)
-
-    logits = model(input_ids, attention_mask)
+ 
+    logits = model(**inputs)
     pred_id = torch.argmax(logits, dim=1).item()
     label = id2label[str(pred_id)]
     return label
-
 
 
 if __name__ == "__main__":
@@ -144,7 +141,6 @@ if __name__ == "__main__":
     print(f"输入文本：{demo_text}")
     print(f"预测类别：{pred_label}")
     print("=" * 50 + "\n")
-
 
 
 plt.rcParams['font.sans-serif'] = ['SimHei']
