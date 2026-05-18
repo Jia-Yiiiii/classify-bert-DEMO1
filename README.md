@@ -65,7 +65,8 @@
 | **weighted avg** | 0.8362 | 0.8336 | 0.8336 | 1064 |
 
 ### 2. 混淆矩阵
-<img width="1438" height="960" alt="811b4f5f5cef134d52702b76594b2ad1" src="https://github.com/user-attachments/assets/2229c75b-0aef-4497-949c-d2ac966b7765" />
+<img width="1815" height="942" alt="1f3d5cd8058bedb28f8f34dadc6584cf" src="https://github.com/user-attachments/assets/bda6df77-ccb1-4fa9-b608-ccfba797ca6e" />
+
 
 ### 3. 各类别准确率
 <img width="1482" height="611" alt="9e36662888a0a6cee657a975367fd8f1" src="https://github.com/user-attachments/assets/60ee932f-6c76-4490-a3b8-a3e8dec18fa7" />
