@@ -60,10 +60,10 @@ def main():
     id2label = {i: lab for i, lab in enumerate(all_labels)} 
 
     import json
-    os.makedirs("data", exist_ok=True)
-    with open("data/label2id.json", "w", encoding="utf-8") as f:
+    os.makedirs("DATA", exist_ok=True)
+    with open("DATA/label2id.json", "w", encoding="utf-8") as f:
         json.dump(label2id, f, ensure_ascii=False, indent=2)
-    with open("data/id2label.json", "w", encoding="utf-8") as f:
+    with open("DATA/id2label.json", "w", encoding="utf-8") as f:
         json.dump(id2label, f, ensure_ascii=False, indent=2)
 
     train_dataset.label2id = label2id
