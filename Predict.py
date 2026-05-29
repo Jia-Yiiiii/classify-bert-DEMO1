@@ -1,69 +1,29 @@
 import torch
-import torch.nn as nn
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report, accuracy_score
 from sklearn.metrics import f1_score, precision_score, recall_score
-from torch.utils.data import Dataset, DataLoader
-from transformers import BertTokenizer, BertModel
-from tqdm import tqdm
+from torch.utils.data import DataLoader
+from transformers import BertTokenizer
 import json
 import os
 
-
-class Config:
-    model_name = "bert-base-chinese"
-    test_path = "DATA/test_1k.txt"
-    max_len = 100
-    batch_size = 16
-    num_classes = 15
-    dropout_rate = 0.4
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+from utils import load_config
+from model import BertWithDropout
+from data_process import NewsDataset
 
 
-config = Config()
+config, config_dict = load_config("./configs/Bert_Config_exp1.json")
+config.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def load_data(file_path):
-    texts, labels = [], []
-    with open(file_path, 'r', encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if len(line) == 0:
-                continue
-            parts = line.split('_!_')
-            if len(parts) >= 4:
-                texts.append(parts[3])
-                labels.append(parts[2])
-    return texts, labels
-
-
-test_texts, test_labels = load_data(config.test_path)
-
-with open("data/label2id.json", "r", encoding="utf-8") as f:
+with open("./DATA/label2id.json", "r", encoding="utf-8") as f:
     label2id = json.load(f)
-with open("data/id2label.json", "r", encoding="utf-8") as f:
+with open("./DATA/id2label.json", "r", encoding="utf-8") as f:
     id2label = json.load(f)
 
 all_labels = list(label2id.keys())
-test_labels_id = [label2id[l] for l in test_labels]
-
-
-
-class BertWithDropout(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.bert = BertModel.from_pretrained(config.model_name)
-        self.dropout = nn.Dropout(config.dropout_rate)
-        self.classifier = nn.Linear(self.bert.config.hidden_size, config.num_classes)
-
-
-    def forward(self, **kwargs):
-        out = self.bert(**kwargs)
-        x = self.dropout(out.pooler_output)
-        logits = self.classifier(x)
-        return logits
 
 
 tokenizer = BertTokenizer.from_pretrained(config.model_name)
@@ -72,30 +32,19 @@ model.load_state_dict(torch.load("best_model.pth", map_location=config.device))
 model.eval()
 
 
-class NewsDataset(Dataset):
-    def __init__(self, texts, labels):
-        self.texts = texts
-        self.labels = labels
+test_dataset = NewsDataset(
+    file_path=config.test_path,
+    tokenizer=tokenizer,
+    config=config
+)
+test_dataset.label2id = label2id
 
-    def __len__(self):
-        return len(self.texts)
-
-    def __getitem__(self, idx):
-        enc = tokenizer(
-            self.texts[idx],
-            max_length=config.max_len,
-            padding="max_length",
-            truncation=True,
-            return_tensors="pt"
-        )
-        return {
-            "input_ids": enc["input_ids"].flatten(),
-            "attention_mask": enc["attention_mask"].flatten(),
-            "labels": torch.tensor(self.labels[idx])
-        }
-
-
-test_loader = DataLoader(NewsDataset(test_texts, test_labels_id), batch_size=config.batch_size, shuffle=False)
+test_loader = DataLoader(
+    test_dataset,
+    batch_size=config.batch_size,
+    shuffle=False,
+    collate_fn=test_dataset.collate_fn
+)
 
 
 @torch.no_grad()
@@ -105,20 +54,16 @@ def get_preds():
         input_ids = batch["input_ids"].to(config.device)
         att_mask = batch["attention_mask"].to(config.device)
         labels = batch["labels"]
-        logits = model(input_ids=input_ids, attention_mask=att_mask)
 
+        logits = model(input_ids=input_ids, attention_mask=att_mask)
         conf, pred = torch.max(torch.softmax(logits, dim=1), dim=1)
+
         preds.extend(pred.cpu().numpy())
         trues.extend(labels.numpy())
         confs.extend(conf.cpu().numpy())
     return trues, preds, confs
 
 
-trues, preds, confs = get_preds()
-
-
-
-@torch.no_grad()
 def predict_single(text):
     inputs = tokenizer(
         text,
@@ -128,81 +73,70 @@ def predict_single(text):
         return_tensors="pt"
     ).to(config.device)
 
- 
     logits = model(**inputs)
     pred_id = torch.argmax(logits, dim=1).item()
-    label = id2label[str(pred_id)]
-    return label
+    return id2label[str(pred_id)]
 
 
 if __name__ == "__main__":
+    trues, preds, confs = get_preds()
+
     demo_text = "神舟十八号载人飞船成功发射，圆满完成任务！"
     pred_label = predict_single(demo_text)
     print(f"输入文本：{demo_text}")
     print(f"预测类别：{pred_label}")
-    print("=" * 50 + "\n")
+    print("=" * 50)
+
+    plt.rcParams['font.sans-serif'] = ['SimHei']
+    plt.rcParams['axes.unicode_minus'] = False
 
 
-plt.rcParams['font.sans-serif'] = ['SimHei']
-plt.rcParams['axes.unicode_minus'] = False
+    plt.figure(figsize=(12, 10))
+    cm = confusion_matrix(trues, preds)
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=all_labels, yticklabels=all_labels)
+    plt.title('混淆矩阵')
+    plt.xlabel('预测')
+    plt.ylabel('真实')
+    plt.tight_layout()
+    plt.show()
 
-# 混淆矩阵
-plt.figure(figsize=(12, 10))
-cm = confusion_matrix(trues, preds)
-sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=all_labels, yticklabels=all_labels)
-plt.title('混淆矩阵 Confusion Matrix', fontsize=16)
-plt.xlabel('预测标签')
-plt.ylabel('真实标签')
-plt.tight_layout()
-plt.show()
 
-# 各类别准确率
-acc_per_class = []
-for i in range(len(all_labels)):
-    mask = np.array(trues) == i
-    if np.sum(mask) == 0:
-        acc_per_class.append(0)
-    else:
-        acc = accuracy_score(np.array(trues)[mask], np.array(preds)[mask])
-        acc_per_class.append(acc)
+    acc_per_class = []
+    for i in range(len(all_labels)):
+        mask = np.array(trues) == i
+        if np.sum(mask) == 0:
+            acc_per_class.append(0)
+        else:
+            acc = accuracy_score(np.array(trues)[mask], np.array(preds)[mask])
+            acc_per_class.append(acc)
 
-plt.figure(figsize=(12, 5))
-sns.barplot(x=all_labels, y=acc_per_class, palette='viridis')
-plt.title('各类别准确率', fontsize=14)
-plt.xticks(rotation=45, ha='right')
-plt.ylim(0, 1)
-plt.tight_layout()
-plt.show()
+    plt.figure(figsize=(12, 5))
+    sns.barplot(x=all_labels, y=acc_per_class)
+    plt.title('各类别准确率')
+    plt.xticks(rotation=45, ha='right')
+    plt.ylim(0, 1)
+    plt.tight_layout()
+    plt.show()
+    count = np.bincount(trues, minlength=len(all_labels))
+    plt.figure(figsize=(8, 8))
+    plt.pie(count, labels=all_labels, autopct='%1.1f%%')
+    plt.title('标签分布')
+    plt.show()
+    plt.figure(figsize=(10, 5))
+    sns.histplot(confs, bins=30, kde=True, color='orange')
+    plt.title('置信度分布')
+    plt.show()
 
-# 标签分布
-labels_count = np.bincount(trues, minlength=len(all_labels))
-plt.figure(figsize=(8, 8))
-plt.pie(labels_count, labels=all_labels, autopct='%1.1f%%', startangle=90)
-plt.title('标签分布', fontsize=14)
-plt.tight_layout()
-plt.show()
 
-# 置信度分布
-plt.figure(figsize=(10, 5))
-sns.histplot(confs, bins=30, kde=True, color='orange')
-plt.title('模型预测置信度分布', fontsize=14)
-plt.xlabel('置信度')
-plt.tight_layout()
-plt.show()
+    acc = accuracy_score(trues, preds)
+    p = precision_score(trues, preds, average='macro')
+    r = recall_score(trues, preds, average='macro')
+    f1 = f1_score(trues, preds, average='macro')
 
-# 指标输出
-accuracy = accuracy_score(trues, preds)
-macro_precision = precision_score(trues, preds, average='macro')
-macro_recall = recall_score(trues, preds, average='macro')
-macro_f1 = f1_score(trues, preds, average='macro')
-
-print("\n" + "=" * 60)
-print("模型综合评估指标")
-print("=" * 60)
-print(f"总体准确率 Accuracy: {accuracy:.4f}")
-print(f"宏平均精确率 Precision: {macro_precision:.4f}")
-print(f"宏平均召回率 Recall: {macro_recall:.4f}")
-print(f"宏平均F1分数 Macro-F1: {macro_f1:.4f}")
-print("=" * 60)
-print("\n详细分类报告：")
-print(classification_report(trues, preds, target_names=all_labels, digits=4))
+    print("\n模型评估指标")
+    print(f"准确率: {acc:.4f}")
+    print(f"精确率: {p:.4f}")
+    print(f"召回率: {r:.4f}")
+    print(f"Macro-F1: {f1:.4f}")
+    print("\n详细报告：")
+    print(classification_report(trues, preds, target_names=all_labels, digits=4))
