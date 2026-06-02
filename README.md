@@ -6,7 +6,7 @@
 ## 项目介绍
 本项目使用 `bert-base-chinese` 预训练模型，对 **15 类中文新闻文本**进行自动分类，实现了从数据加载、模型训练、模型评估到单句预测的完整流程，并通过 SwanLab 可视化实验过程。
 
-模型在 3k 训练集上收敛稳定，最终在测试集上取得了 **83.4%** 的准确率，验证了 BERT 在中文文本分类任务上的有效性。
+模型在 3k 训练集上收敛稳定，最终在测试集上取得了 **84.39%** 的准确率，验证了 BERT 在中文文本分类任务上的有效性。
 
 模型文件 `best_model.pth` 因体积较大未上传，可自行训练生成。
 
@@ -14,9 +14,7 @@
 
 ---
 ## 数据集
-
 本项目使用今日头条新闻标题分类数据集。
-
 - 数据来源：今日头条客户端
 - 采集时间：2018 年 5 月
 - 下载地址：[toutiao-text-classfication-dataset](https://github.com/aceimnorstuvwxz/toutiao-text-classfication-dataset)
@@ -31,114 +29,16 @@
 ---
 
 ---
-
-## 模型效果可视化
-
 ### 1. 模型指标
 ### 模型整体指标
-- 总体准确率 (Accuracy): 0.8336
-- 宏平均精确率 (Macro-Precision): 0.8313
-- 宏平均召回率 (Macro-Recall): 0.8095
-- 宏平均F1分数 (Macro-F1): 0.8179
-- 最终测试集准确率: 0.8336466165413534
-
-
-| 类别 | precision | recall | f1-score | support |
-| :--- | :---: | :---: | :---: | :---: |
-| news_agriculture | 0.7679 | 0.8113 | 0.7890 | 53 |
-| news_car | 0.8774 | 0.9394 | 0.9073 | 99 |
-| news_culture | 0.9143 | 0.8312 | 0.8707 | 77 |
-| news_edu | 0.8608 | 0.9189 | 0.8889 | 74 |
-| news_entertainment | 0.8716 | 0.8796 | 0.8756 | 108 |
-| news_finance | 0.7432 | 0.7432 | 0.7432 | 74 |
-| news_game | 0.7609 | 0.8750 | 0.8140 | 80 |
-| news_house | 0.8864 | 0.7959 | 0.8387 | 49 |
-| news_military | 0.7826 | 0.7826 | 0.7826 | 69 |
-| news_sports | 0.9570 | 0.8641 | 0.9082 | 103 |
-| news_story | 0.7333 | 0.6471 | 0.6875 | 17 |
-| news_tech | 0.7826 | 0.7895 | 0.7860 | 114 |
-| news_travel | 0.8644 | 0.8644 | 0.8644 | 59 |
-| news_world | 0.7671 | 0.7568 | 0.7619 | 74 |
-| stock | 0.9000 | 0.6429 | 0.7500 | 14 |
-| **accuracy** | - | - | 0.8336 | 1064 |
-| **macro avg** | 0.8313 | 0.8095 | 0.8179 | 1064 |
-| **weighted avg** | 0.8362 | 0.8336 | 0.8336 | 1064 |
-
-### 2. 混淆矩阵
-<img width="1815" height="942" alt="1f3d5cd8058bedb28f8f34dadc6584cf" src="https://github.com/user-attachments/assets/bda6df77-ccb1-4fa9-b608-ccfba797ca6e" />
-
-
-### 3. 各类别准确率
-<img width="1482" height="611" alt="9e36662888a0a6cee657a975367fd8f1" src="https://github.com/user-attachments/assets/60ee932f-6c76-4490-a3b8-a3e8dec18fa7" />
-
-### 4. 标签分布
-<img width="967" height="925" alt="3ba5c9c2db08bb8e16099c10fdcf6125" src="https://github.com/user-attachments/assets/c2010f4d-e811-4c00-aa82-2665e4dc5386" />
-
-### 5. 模型预测置信度分布
-<img width="1237" height="615" alt="697f1dcd67523ba784044fd47c17c711" src="https://github.com/user-attachments/assets/f9dc29d6-b47b-485c-adde-6a3cf70ae346" />
-
----
-
-## 两组超参数对比实验
-为了分析不同超参数对模型性能的影响，本项目设计了 2 组实验。所有实验均训练 12个 epoch，并使用标准交叉熵损失函数
-### 实验 1
-| 参数 | 取值 |
-| ---- | ---- |
-| 预训练模型 | bert‑base‑chinese |
-| max_len | 100 |
-| batch_size | 16 |
-| lr | 1e‑5 |
-| dropout_rate | 0.4 |
-| weight_decay | 1e‑4 |
-| epochs | 12 |
-| num_classes | 15 |
-
-![SwanLab1](https://github.com/user-attachments/assets/1cb09e98-05e4-4735-a334-505ba9b2f628)
-<img width="1015" height="352" alt="8675df908b9bd34888380273ec9111d2" src="https://github.com/user-attachments/assets/1e74d048-ea70-40ca-901b-18650082baec" />
-![SwanLab3](https://github.com/user-attachments/assets/5540f44a-57e0-4252-9d27-d00e80e8a9c4)
-
----
-
-### 实验 2
-| 超参数 | 数值 |
-| ---- | ---- |
-| 预训练模型 | bert‑base‑chinese |
-| max_len | 100 |
-| batch_size | 16 |
-| learning_rate | 2e‑5 |
-| dropout_rate | 0.3 |
-| weight_decay | 1e‑4 |
-| epochs | 12 |
-| num_classes | 15 |
-<img width="996" height="315" alt="096097c9982a784b8879626d8db91e14" src="https://github.com/user-attachments/assets/e19cee15-e350-4fa0-876a-1283f5dad279" />
-<img width="1082" height="337" alt="image" src="https://github.com/user-attachments/assets/db78eae5-c368-46ca-bc27-c1d00ed9aebb" />
-<img width="596" height="342" alt="image" src="https://github.com/user-attachments/assets/24e2bb5b-b852-4499-a4d5-f6c2458c2957" />
-
-
----
-# 实验结论
-- **实验 1（lr=1e-5 + dropout=0.4）**
-  训练过程极其稳定，几乎不过拟合，验证曲线平滑，**泛化能力最优**。
-- **实验 2（lr=2e-5 + dropout=0.3）**
-  训练集充分收敛，但验证集 loss 震荡回升、精度剧烈波动，无法稳定收敛，**过拟合风险极高**。
-
-## 选择实验 1 的核心理由
-1. **优先保证泛化能力，避免过拟合**
-dropout=0.4 正则化更强，虽然测试精度略低，但验证集全程平稳、无明显震荡/过拟合，在未知真实数据上表现更可靠，符合文本分类落地需求。
-
-2. **训练稳定性优先于单次最高精度**
-实验 2 收敛快、精度高，但更容易过拟合；实验 1 训练曲线平滑、鲁棒性更强，多次复现结果波动更小，实验可重复性更好。
-
-3. **符合 BERT 微调最佳实践**
-文本分类任务中，防止过拟合、提升泛化比追求单次最高测试精度更重要，dropout=0.4 更适配小/中等规模新闻数据集，避免模型死记训练数据。
-
-综上所述，本实验选择 **实验 1（lr=1e-5 + dropout=0.4）**
-
-
+<img width="648" height="589" alt="7aaad8c75676b1184ea45384a4d55bd8" src="https://github.com/user-attachments/assets/9a267544-402f-407a-b2e6-a08bff7c0555" />
 ## 单句文本预测演示
 支持输入任意中文新闻文本，直接输出分类结果，示例：
 - 输入文本：`神舟十八号载人飞船成功发射，圆满完成任务！`
 - 预测类别：`news_military`（军事类）
+
+- <img width="278" height="72" alt="f432ebc652243bb3eb6b9b01c2234f47" src="https://github.com/user-attachments/assets/2bec1acf-22da-4249-b539-6753a2f6ee9a" />
+
 
 <img width="462" height="65" alt="image" src="https://github.com/user-attachments/assets/74abaeed-35f6-4a9e-8d0a-3c1da4994049" />
 
