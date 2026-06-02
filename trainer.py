@@ -1,120 +1,185 @@
-import os
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
-
-import swanlab
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
-from transformers import BertTokenizer, get_linear_schedule_with_warmup
-from sklearn.metrics import accuracy_score, classification_report
-from tqdm import tqdm
+import swanlab
+from transformers import BertTokenizer, BertForSequenceClassification
+from torch.optim import AdamW
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import classification_report
+from data_process import Demo1_Dataset, collate_fn,Load_Demo1_Data,get_textslabels,Myloader,config
 
-from utils import set_seed, load_config
-from data_process import NewsDataset
-from model import BertWithDropout
 
-def train_epoch(model, loader, optimizer, scheduler, criterion, config):
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+swanlab.init(
+    project="bert-news-classification",
+    config={
+        "learning_rate": config["learning_rate"],
+        "batch_size": config["batch_size"],
+        "epochs": config["epochs"],
+        "model": config["model_name"]
+    }
+)
+
+data = Load_Demo1_Data(config["data_path"])
+dev_data = Load_Demo1_Data(config["dev_path"])
+test_data = Load_Demo1_Data(config["test_path"])
+
+
+lables = []
+for i in data:
+    lables.append(i[1])
+
+unique_labels = []
+for i in lables:
+    if i not in unique_labels:
+        unique_labels.append(i)
+
+label_id = {}
+id_label = {}
+for i in range(len(unique_labels)):
+    label_id[unique_labels[i]] = i
+    id_label[i] = unique_labels[i]
+
+
+texts, numlabels = get_textslabels(data, label_id)
+dev_texts, dev_labels = get_textslabels(dev_data, label_id)
+test_texts, test_labels = get_textslabels(test_data, label_id)
+
+
+
+tokenizer = BertTokenizer.from_pretrained(config["model_name"])
+
+
+train_loader = Myloader(texts, numlabels, tokenizer, config["batch_size"], shuffle=True)
+dev_loader = Myloader(dev_texts, dev_labels, tokenizer, config["batch_size"], shuffle=False)
+test_loader = Myloader(test_texts, test_labels, tokenizer, config["batch_size"], shuffle=False)
+
+
+
+num_classes = len(unique_labels)
+model = BertForSequenceClassification.from_pretrained(config["model_name"], num_labels=num_classes)
+model.to(device)
+
+
+optimizer = AdamW(model.parameters(), lr=config["learning_rate"])
+
+
+epochs = config["epochs"]
+best_acc = 0.0
+counter = 0
+stop = config["patience"]
+
+for epoch in range(epochs):
     model.train()
-    total_loss, preds, labels = 0, [], []
-    for batch in tqdm(loader, desc="Train"):
-        input_ids = batch["input_ids"].to(config.device)
-        attention_mask = batch["attention_mask"].to(config.device)
-        label = batch["labels"].to(config.device)
+    total_loss = 0
+    batch_count = 0
+
+    for batch in train_loader:
+        inputid = batch[0].to(device)
+        masks = batch[1].to(device)
+        labels = batch[2].to(device)
+
         optimizer.zero_grad()
-        out = model(input_ids=input_ids, attention_mask=attention_mask)
-        loss = criterion(out, label)
+        outputs = model(inputid, attention_mask=masks, labels=labels)
+        loss = outputs.loss
         loss.backward()
         optimizer.step()
-        scheduler.step()
         total_loss += loss.item()
-        preds.extend(torch.argmax(out, dim=1).cpu().numpy())
-        labels.extend(label.cpu().numpy())
-    return total_loss / len(loader), accuracy_score(labels, preds)
+        batch_count += 1
 
-@torch.no_grad()
-def eval_epoch(model, loader, criterion, config):
+    avg_loss = total_loss / batch_count
+    print("第", epoch+1, "轮 训练loss:", avg_loss)
+
+
     model.eval()
-    total_loss, preds, labels = 0, [], []
-    for batch in tqdm(loader, desc="Eval"):
-        input_ids = batch["input_ids"].to(config.device)
-        attention_mask = batch["attention_mask"].to(config.device)
-        label = batch["labels"].to(config.device)
-        out = model(input_ids=input_ids, attention_mask=attention_mask)
-        
-        loss = criterion(out, label)
-        total_loss += loss.item()
-        preds.extend(torch.argmax(out, dim=1).cpu().numpy())
-        labels.extend(label.cpu().numpy())
-    return total_loss / len(loader), accuracy_score(labels, preds), preds, labels
+    p = []
+    label = []
 
-def main():
-    set_seed(42)
-    config, config_dict = load_config("./configs/Bert_Config_exp1.json")
-    tokenizer = BertTokenizer.from_pretrained(config.model_name)
-    train_dataset = NewsDataset(config.train_path, tokenizer, config)
-    dev_dataset = NewsDataset(config.dev_path, tokenizer, config)
-    test_dataset = NewsDataset(config.test_path, tokenizer, config)
+    with torch.no_grad():
+        for batch in dev_loader:
+            inputid = batch[0].to(device)
+            masks = batch[1].to(device)
+            labels = batch[2].to(device)
 
-    all_labels = sorted({lab for _, lab in train_dataset} | {lab for _, lab in dev_dataset})
-    label2id = {lab: i for i, lab in enumerate(all_labels)}
-    id2label = {i: lab for i, lab in enumerate(all_labels)} 
+            outputs = model(inputid, attention_mask=masks)
+            preds = torch.argmax(outputs.logits, dim=1)
 
-    import json
-    os.makedirs("DATA", exist_ok=True)
-    with open("DATA/label2id.json", "w", encoding="utf-8") as f:
-        json.dump(label2id, f, ensure_ascii=False, indent=2)
-    with open("DATA/id2label.json", "w", encoding="utf-8") as f:
-        json.dump(id2label, f, ensure_ascii=False, indent=2)
+            p.extend(preds.numpy())
+            label.extend(labels.numpy())
 
-    train_dataset.label2id = label2id
-    dev_dataset.label2id = label2id
-    test_dataset.label2id = label2id
+    val_acc = accuracy_score(label, p)
+    print("验证准确率:", val_acc)
 
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=config.batch_size,
-        shuffle=True,
-        collate_fn=train_dataset.collate_fn 
-    )
-    dev_loader = DataLoader(
-        dev_dataset,
-        batch_size=config.batch_size,
-        shuffle=False,
-        collate_fn=dev_dataset.collate_fn
-    )
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=config.batch_size,
-        shuffle=False,
-        collate_fn=test_dataset.collate_fn
-    )
+    swanlab.log({
+        "train/loss": avg_loss,
+        "val/acc": val_acc,
+        "epoch": epoch + 1
+    })
 
-    model = BertWithDropout(config).to(config.device)
-    optimizer = torch.optim.AdamW(model.parameters(),lr=config.lr,weight_decay=config.weight_decay)
-    total_steps = len(train_loader) * config.epochs
-    scheduler = get_linear_schedule_with_warmup(optimizer,num_warmup_steps=int(0.1 * total_steps),num_training_steps=total_steps)
-    criterion = nn.CrossEntropyLoss()
-    swanlab.init(project="bert-news-83+", config=config_dict)
-    best_acc = 0.0
-    for epoch in range(config.epochs):
-        print(f"\n===== Epoch {epoch + 1} =====")
-        train_loss, train_acc = train_epoch(model, train_loader, optimizer, scheduler, criterion, config)
-        dev_loss, dev_acc, _, _ = eval_epoch(model, dev_loader, criterion, config)
-        if dev_acc > best_acc:
-            best_acc = dev_acc
-            torch.save(model.state_dict(), "best_model.pth")
-            print("已保存最优模型")
-        swanlab.log({"train/loss": train_loss,"train/acc": train_acc,"dev/loss": dev_loss,"dev/acc": dev_acc})
-        print(f"Train loss {train_loss:.4f} acc {train_acc:.4f}")
-        print(f"Dev loss {dev_loss:.4f} acc {dev_acc:.4f}")
-    model.load_state_dict(torch.load("best_model.pth", map_location=config.device))
-    model.eval()
-    test_loss, test_acc, test_pred, test_label = eval_epoch(model, test_loader, criterion, config)
-    print("\n" + "="*30)
-    print(f"测试集最终准确率：{test_acc:.4f}")
-    print("="*30)
-    swanlab.log({"test/acc": test_acc})
-    swanlab.finish()
+    if val_acc > best_acc:
+        best_acc = val_acc
+        counter = 0
+        torch.save(model.state_dict(), "best_model.pth")
+        print("验证准确率:", val_acc)
+    else:
+        counter += 1
+    if counter >= stop:
+        break
 
-if __name__ == "__main__":
-    main()
+print("最好的验证准确率", best_acc)
+
+
+# 测试集评估
+model.load_state_dict(torch.load("best_model.pth"))
+model.eval()
+test_preds = []
+test_true = []
+
+with torch.no_grad():
+    for batch in test_loader:
+        inputid = batch[0].to(device)
+        masks = batch[1].to(device)
+        labels = batch[2].to(device)
+
+        outputs = model(inputid, attention_mask=masks)
+        preds = torch.argmax(outputs.logits, dim=1)
+
+        test_preds.extend(preds.numpy())
+        test_true.extend(labels.numpy())
+
+test_acc = accuracy_score(test_true, test_preds)
+print("测试集准确率:", test_acc)
+
+
+
+
+
+map = {
+    "news_story": "新闻故事", "news_culture": "新闻文化", "news_entertainment": "新闻娱乐",
+    "news_sports": "新闻体育", "news_finance": "新闻财经", "news_house": "新闻房产",
+    "news_car": "新闻汽车", "news_edu": "新闻教育", "news_tech": "新闻科技",
+    "news_military": "新闻军事", "news_travel": "新闻旅游", "news_world": "新闻国际",
+    "stock": "股票", "news_agriculture": "新闻农业", "news_game": "新闻游戏",
+}
+
+class_names = []
+for i in range(len(id_label)):
+    en_name = id_label[i]
+    cn_name = map.get(en_name, en_name)
+    class_names.append(cn_name)
+
+print("\n分类报告:")
+print(classification_report(test_true, test_preds, target_names=class_names))
+
+swanlab.log({"test/acc": test_acc})
+
+
+with open("DATA/label_id.txt", "w", encoding="utf-8") as f:
+    for k, v in label_id.items():
+        f.write(f"{k}:{v}\n")
+
+with open("DATA/id_label.txt", "w", encoding="utf-8") as f:
+    for k, v in id_label.items():
+        f.write(f"{k}:{v}\n")
+
+swanlab.finish()
