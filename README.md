@@ -27,8 +27,11 @@
 | dev_1k.txt | 1000 | 验证集 |
 | test_1k.txt | 1064 | 测试集 | 
 ---
-
+##数据分析
+ <img width="1324" height="167" alt="7bb82acfd5eb574f06e4887913782a81" src="https://github.com/user-attachments/assets/705cac3e-63bb-4f29-8bd2-70ee0d8b7187" />
+通过前期读取数据前五行主要发现数据的构成为五个部分，并将每条新闻的标题和关键词用中文逗号拼接，作为模型的输入文本，辅助模型进行分类
 ---
+
 ### 1. 模型指标
 ### 模型整体指标
 <img width="648" height="589" alt="7aaad8c75676b1184ea45384a4d55bd8" src="https://github.com/user-attachments/assets/9a267544-402f-407a-b2e6-a08bff7c0555" />
