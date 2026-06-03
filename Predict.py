@@ -42,7 +42,7 @@ def predict(text):
 if __name__ == "__main__":
     text = input("请输入: ")
     if text.strip():
-        　x = predict(text)
-        print("预测类别:",x)
+        result = predict(text)
+        print("预测类别:", result)
     else:
         print("输入不能为空")
