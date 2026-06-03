@@ -43,14 +43,15 @@
 
 ## 模型指标
 
-### 1.整体分类报告
+### 整体分类报告
 
 <img width="648" height="589" alt="分类报告" src="https://github.com/user-attachments/assets/9a267544-402f-407a-b2e6-a08bff7c0555" />
 
-###2.可视化分析
-<img width="1118" height="867" alt="d3c00384075ec51186c35ead42415bee" src="https://github.com/user-attachments/assets/24de0152-bf3c-4320-bb89-95975d84cd5f" />
+### 可视化分析
 
-<img width="1499" height="611" alt="743010159ebbb6fde51a6b29ce4d78bd" src="https://github.com/user-attachments/assets/e7b37bd4-25ca-4474-8fb6-26d0572ed728" />
+<img width="1118" height="867" alt="可视化1" src="https://github.com/user-attachments/assets/24de0152-bf3c-4320-bb89-95975d84cd5f" />
+
+<img width="1499" height="611" alt="可视化2" src="https://github.com/user-attachments/assets/e7b37bd4-25ca-4474-8fb6-26d0572ed728" />
 
 ### 表现分析
 
@@ -81,8 +82,6 @@
 **示例**：
 
 <img width="278" height="72" alt="预测示例" src="https://github.com/user-attachments/assets/2bec1acf-22da-4249-b539-6753a2f6ee9a" />
-
-
 
 ### 使用方式
 
