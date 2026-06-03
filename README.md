@@ -8,7 +8,8 @@
 
 本项目使用 `bert-base-chinese` 预训练模型，对 **15 类中文新闻文本**进行自动分类，实现了从数据加载、模型训练、模型评估到单句预测的完整流程，并通过 SwanLab 可视化实验过程。
 
-模型在 3k 训练集上收敛稳定，最终在测试集上取得了 **83.4%** 的准确率，验证了 BERT 在中文文本分类任务上的有效性。
+模型在训练集上的损失函数持续下降，表明优化过程稳定、模型基本收敛。但由于训练数据量有限（3k），从第 1 轮开始验证集准确率不再上升，出现轻微过拟合。
+通过早停机制（patience=2）在第 2 轮后停止训练，保留了第 0 轮的最优模型。
 
 > 注：模型文件 `best_model.pth` 因体积较大未上传，可自行训练生成。
 
@@ -42,6 +43,12 @@
 ---
 
 ## 模型指标
+<img width="439" height="420" alt="image" src="https://github.com/user-attachments/assets/6f029122-1420-4667-8b24-b20ecc7960c8" />
+
+<img width="437" height="423" alt="image" src="https://github.com/user-attachments/assets/b87d6e89-bd1c-4467-a2f5-779add72f898" />
+<img width="434" height="421" alt="image" src="https://github.com/user-attachments/assets/ce9557d3-0c6d-445f-9358-7c63254a805e" />
+
+<img width="437" height="421" alt="image" src="https://github.com/user-attachments/assets/c6f94093-25d5-4ffa-aa09-a14d7d579a22" />
 
 ### 整体分类报告
 
@@ -55,19 +62,7 @@
 
 ### 表现分析
 
-#### 表现最好的三个类别
-
-- `news_car`（汽车新闻）
-- `news_sports`（体育新闻）
-- `news_edu`（教育新闻）
-
-#### 表现最差的三个类别
-
-- `news_agriculture`（农业新闻）
-- `news_finance`（财经新闻）
-- `stock`（股票）
-
-**原因分析**：
+根据可视化分析，模型在汽车、农业、教育等类别上表现优秀（F1 > 0.90），但在股票、财经、国际等类别上存在明显不足。混淆矩阵显示，股票与财经互相混淆最为严重，科技类新闻被误判为财经类的次数高达49次，国际类也有26次被误判为财经。主要原因是股票样本仅14条、数量严重不足，且财经与股票、科技、国际等类别之间存在大量语义重叠词汇。
 
 1. 样本数量极少，类别不平衡严重
 2. 文本特征相似，易互相误判
@@ -101,7 +96,7 @@ classify-bert-DEMO1/
 ├── configs/                 # 配置文件目录
 │   └── Bert_Config_exp1.json
 ├── model.py                 # 模型结构
-├── Predict.py               # 测试/预测脚本
+├── Predict.py               # 预测脚本
 ├── trainer.py               # 训练脚本
 ├── utils.py                 # 工具函数
 ├── requirements.txt         # 依赖
