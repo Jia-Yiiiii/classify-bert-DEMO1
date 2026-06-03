@@ -43,14 +43,14 @@
 
 ## 模型指标
 
-### 整体分类报告
+### 1.整体分类报告
 
 <img width="648" height="589" alt="分类报告" src="https://github.com/user-attachments/assets/9a267544-402f-407a-b2e6-a08bff7c0555" />
 
-- **准确率（Accuracy）**：83.4%
-- **宏平均精确率（Macro-Precision）**：84.0%
-- **宏平均召回率（Macro-Recall）**：82.0%
-- **宏平均 F1 分数（Macro-F1）**：83.0%
+###2.可视化分析
+<img width="1118" height="867" alt="d3c00384075ec51186c35ead42415bee" src="https://github.com/user-attachments/assets/24de0152-bf3c-4320-bb89-95975d84cd5f" />
+
+<img width="1499" height="611" alt="743010159ebbb6fde51a6b29ce4d78bd" src="https://github.com/user-attachments/assets/e7b37bd4-25ca-4474-8fb6-26d0572ed728" />
 
 ### 表现分析
 
