@@ -3,11 +3,11 @@ from torch.utils.data import DataLoader
 import swanlab
 from transformers import BertTokenizer, BertForSequenceClassification
 from torch.optim import AdamW
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score, classification_report, f1_score, confusion_matrix
 from data_process import Demo1_Dataset, collate_fn,Load_Demo1_Data,get_textslabels,Myloader,config
-
-
+import matplotlib.pyplot as plt
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 swanlab.init(
@@ -129,6 +129,7 @@ for epoch in range(epochs):
 print("最好的验证准确率", best_acc)
 
 
+# 测试集评估
 model.load_state_dict(torch.load("best_model.pth"))
 model.eval()
 test_preds = []
@@ -149,16 +150,22 @@ with torch.no_grad():
 test_acc = accuracy_score(test_true, test_preds)
 print("测试集准确率:", test_acc)
 
-
-
-
-
 map = {
-    "news_story": "新闻故事", "news_culture": "新闻文化", "news_entertainment": "新闻娱乐",
-    "news_sports": "新闻体育", "news_finance": "新闻财经", "news_house": "新闻房产",
-    "news_car": "新闻汽车", "news_edu": "新闻教育", "news_tech": "新闻科技",
-    "news_military": "新闻军事", "news_travel": "新闻旅游", "news_world": "新闻国际",
-    "stock": "股票", "news_agriculture": "新闻农业", "news_game": "新闻游戏",
+    "news_story": "新闻故事",
+    "news_culture": "新闻文化",
+    "news_entertainment": "新闻娱乐",
+    "news_sports": "新闻体育",
+    "news_finance": "新闻财经",
+    "news_house": "新闻房产",
+    "news_car": "新闻汽车",
+    "news_edu": "新闻教育",
+    "news_tech": "新闻科技",
+    "news_military": "新闻军事",
+    "news_travel": "新闻旅游",
+    "news_world": "新闻国际",
+    "stock": "股票",
+    "news_agriculture": "新闻农业",
+    "news_game": "新闻游戏",
 }
 
 class_names = []
@@ -170,6 +177,49 @@ for i in range(len(id_label)):
 print("\n分类报告:")
 print(classification_report(test_true, test_preds, target_names=class_names))
 
+
+f1s = []
+for i in range(len(class_names)):
+    tp = 0
+    fp = 0
+    fn = 0
+    for j in range(len(test_true)):
+        if test_true[j] == i and test_preds[j] == i:
+            tp += 1
+        elif test_true[j] != i and test_preds[j] == i:
+            fp += 1
+        elif test_true[j] == i and test_preds[j] != i:
+            fn += 1
+    if tp + fp == 0 or tp + fn == 0:
+        f1s.append(0)
+    else:
+        p = tp / (tp + fp)
+        r = tp / (tp + fn)
+        f1 = 2 * p * r / (p + r)
+        f1s.append(f1)
+
+plt.figure(figsize=(12, 5))
+plt.bar(class_names, f1s)
+plt.xticks(rotation=45)
+plt.ylim(0, 1)
+plt.ylabel('F1')
+plt.title('各类别F1分数')
+plt.tight_layout()
+plt.show()
+
+
+cm = confusion_matrix(test_true, test_preds)
+plt.figure(figsize=(12, 10))
+plt.imshow(cm, cmap='Blues')
+plt.colorbar()
+plt.xticks(range(len(class_names)), class_names, rotation=45)
+plt.yticks(range(len(class_names)), class_names)
+for i in range(len(class_names)):
+    for j in range(len(class_names)):
+        plt.text(j, i, cm[i, j], ha='center', va='center')
+plt.title('混淆矩阵')
+plt.tight_layout()
+plt.show()
 swanlab.log({"test/acc": test_acc})
 
 
