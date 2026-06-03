@@ -80,12 +80,9 @@
 
 **示例**：
 
-- **输入文本**：`神舟十八号载人飞船成功发射，圆满完成任务！`
-- **预测类别**：`news_military`（军事类）
-
 <img width="278" height="72" alt="预测示例" src="https://github.com/user-attachments/assets/2bec1acf-22da-4249-b539-6753a2f6ee9a" />
 
-<img width="462" height="65" alt="使用说明" src="https://github.com/user-attachments/assets/74abaeed-35f6-4a9e-8d0a-3c1da4994049" />
+
 
 ### 使用方式
 
