@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 import swanlab
 from transformers import BertTokenizer, BertForSequenceClassification
 from torch.optim import AdamW
-from sklearn.metrics import accuracy_score, classification_report, f1_score, confusion_matrix
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from data_process import Demo1_Dataset, collate_fn,Load_Demo1_Data,get_textslabels,Myloader,config
 import matplotlib.pyplot as plt
 plt.rcParams['font.sans-serif'] = ['SimHei']
