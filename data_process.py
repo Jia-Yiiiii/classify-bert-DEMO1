@@ -8,7 +8,6 @@ class Demo1_Dataset(Dataset):
         self.labels = labels
         self.tokenizer = tokenizer
         self.max_len = max_len
-
     def __len__(self):
         return len(self.texts)
 
