@@ -129,7 +129,7 @@ for epoch in range(epochs):
 print("最好的验证准确率", best_acc)
 
 
-# 测试集评估
+
 model.load_state_dict(torch.load("best_model.pth"))
 model.eval()
 test_preds = []
