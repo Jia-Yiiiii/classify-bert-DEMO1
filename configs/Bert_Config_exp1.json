@@ -7,6 +7,6 @@
     "batch_size": 16,
     "epochs": 10,
     "max_len": 128,
-    "patience": 2
+    "patience": 3
 
 }
