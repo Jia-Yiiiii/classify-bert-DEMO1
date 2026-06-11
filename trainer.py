@@ -7,6 +7,7 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 import matplotlib.pyplot as plt
 from data_process import Load_Demo1_Data, get_textslabels, Myloader
 from model import BertWithDropout
+from utils import set_seed
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -18,14 +19,13 @@ class Trainer:
         self.best_accuracy = 0.0
         self.counter = 0
         self.loss = torch.nn.CrossEntropyLoss()
-
         self.model = None
         self.train_loader = None
         self.dev_loader = None
         self.test_loader = None
         self.label_id = None
         self.id_label = None
-
+        set_seed(config.get("seed", 42))
     def load_data(self):
 
         train_data = Load_Demo1_Data(self.config["data_path"])
