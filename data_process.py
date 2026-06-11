@@ -7,11 +7,14 @@ class Demo1_Dataset(Dataset):
         self.labels = labels
         self.tokenizer = tokenizer
         self.max_len = max_len
+
     def __len__(self):
         return len(self.texts)
+
     def __getitem__(self, idx):
         text = self.texts[idx]
         label = self.labels[idx]
+
         x = self.tokenizer(
             text,
             truncation=True,
@@ -29,13 +32,16 @@ def collate_fn(batch):
     all_ids = []
     all_masks = []
     all_labels = []
+
     for i in batch:
         all_ids.append(i[0])
         all_masks.append(i[1])
         all_labels.append(i[2])
+
     input_ids = torch.stack(all_ids, dim=0)
     masks = torch.stack(all_masks, dim=0)
     labels = torch.stack(all_labels, dim=0)
+
     return input_ids, masks, labels
 
 
