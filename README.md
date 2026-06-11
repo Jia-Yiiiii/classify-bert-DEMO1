@@ -49,22 +49,21 @@
 ---
 
 ## 模型指标
-<img width="439" height="420" alt="image" src="https://github.com/user-attachments/assets/6f029122-1420-4667-8b24-b20ecc7960c8" />
-
-<img width="437" height="423" alt="image" src="https://github.com/user-attachments/assets/b87d6e89-bd1c-4467-a2f5-779add72f898" />
-<img width="434" height="421" alt="image" src="https://github.com/user-attachments/assets/ce9557d3-0c6d-445f-9358-7c63254a805e" />
-
-<img width="437" height="421" alt="image" src="https://github.com/user-attachments/assets/c6f94093-25d5-4ffa-aa09-a14d7d579a22" />
+<img width="497" height="367" alt="image" src="https://github.com/user-attachments/assets/a3c7a756-7ed1-4b6a-8574-a290712d22fc" />
+<img width="445" height="415" alt="image" src="https://github.com/user-attachments/assets/9c1e7257-d7a0-4d8d-a171-54c7ea2ffd61" />
+<img width="482" height="334" alt="image" src="https://github.com/user-attachments/assets/7dc4644b-3792-4227-ab51-e40012a3aa3c" />
+<img width="480" height="338" alt="image" src="https://github.com/user-attachments/assets/3f332929-2037-41dc-b666-a98ba7df2622" />
+<img width="479" height="335" alt="image" src="https://github.com/user-attachments/assets/5fbeac08-21b6-4965-82cd-2818a8ee54e8" />
 
 ### 整体分类报告
 
-<img width="648" height="589" alt="分类报告" src="https://github.com/user-attachments/assets/9a267544-402f-407a-b2e6-a08bff7c0555" />
+<img width="636" height="615" alt="e765164df2e6cbf19ea1899768fa5f48" src="https://github.com/user-attachments/assets/2128dc01-6a45-425a-af3d-9932187999fa" />
+
 
 ### 可视化分析
 
-<img width="1118" height="867" alt="可视化1" src="https://github.com/user-attachments/assets/24de0152-bf3c-4320-bb89-95975d84cd5f" />
-
-<img width="1499" height="611" alt="可视化2" src="https://github.com/user-attachments/assets/e7b37bd4-25ca-4474-8fb6-26d0572ed728" />
+<img width="1230" height="885" alt="846d94d1da156a82fdf81d9993054c1c" src="https://github.com/user-attachments/assets/a41e2863-93e1-43cc-9005-4b588d72f539" />
+<img width="1488" height="610" alt="8cb36a522b23cb0eb6f4a7a24999b78f" src="https://github.com/user-attachments/assets/0a296d6a-6b07-4c35-b5ff-64090729537c" />
 
 ### 表现分析
 
@@ -80,9 +79,7 @@
 
 支持输入任意中文新闻文本，直接输出分类结果。
 
-**示例**：
-
-<img width="278" height="72" alt="预测示例" src="https://github.com/user-attachments/assets/2bec1acf-22da-4249-b539-6753a2f6ee9a" />
+<img width="330" height="79" alt="image" src="https://github.com/user-attachments/assets/f669e63f-f75f-4f9c-bd3d-7f7c0d7e4975" />
 
 ### 使用方式
 
