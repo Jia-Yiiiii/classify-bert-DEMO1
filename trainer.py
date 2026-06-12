@@ -6,9 +6,7 @@ from torch.optim import AdamW
 import matplotlib.pyplot as plt
 from data_process import Load_Demo1_Data, get_textslabels, Myloader
 from model import BertWithDropout
-from utils import set_seed
-from Metrics import Metrics
-
+from utils import set_seed, Metrics 
 
 class Trainer:
     def __init__(self, config):
@@ -136,7 +134,7 @@ class Trainer:
                 self.best_accuracy = eval_accuracy
                 self.counter = 0
                 self.savemodel()
-                print("最好模型的验证准确率:", eval_accuracy)
+                print("最佳模型的验证准确率:", eval_accuracy)
             else:
                 self.counter += 1
             if self.counter >= self.config["patience"]:
@@ -183,7 +181,7 @@ class Trainer:
                 all_preds.extend(preds.cpu().numpy())
                 all_labels.extend(labels.cpu().numpy())
         test_acc = self.metrics.accuracy(all_labels, all_preds)
-        print("测试集的准确率:", test_acc)
+        print("测试集准确率:", test_acc)
         swanlab.log({"test/acc": test_acc})
 
         self.metrics.plot(all_labels, all_preds)
