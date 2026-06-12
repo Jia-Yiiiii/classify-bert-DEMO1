@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 
+
 class Demo1_Dataset(Dataset):
     def __init__(self, texts, labels, tokenizer, max_len):
         self.texts = texts
@@ -12,37 +13,17 @@ class Demo1_Dataset(Dataset):
         return len(self.texts)
 
     def __getitem__(self, idx):
-        text = self.texts[idx]
-        label = self.labels[idx]
+        return self.texts[idx], self.labels[idx]
 
-        x = self.tokenizer(
-            text,
-            truncation=True,
-            padding='max_length',
-            max_length=self.max_len,
-        )
+    def collate_fn(self, batch):
+        texts = []
+        labels = []
+        for i in range(len(batch)):
+            texts.append(batch[i][0])
+            labels.append(batch[i][1])
 
-        input_ids = torch.tensor(x['input_ids'])
-        attention_mask = torch.tensor(x['attention_mask'])
-        label = torch.tensor(label)
-        return input_ids, attention_mask, label
-
-
-def collate_fn(batch):
-    all_ids = []
-    all_masks = []
-    all_labels = []
-
-    for i in batch:
-        all_ids.append(i[0])
-        all_masks.append(i[1])
-        all_labels.append(i[2])
-
-    input_ids = torch.stack(all_ids, dim=0)
-    masks = torch.stack(all_masks, dim=0)
-    labels = torch.stack(all_labels, dim=0)
-
-    return input_ids, masks, labels
+        x = self.tokenizer(texts, truncation=True, padding='max_length', max_length=self.max_len, return_tensors='pt')
+        return x['input_ids'], x['attention_mask'], torch.tensor(labels)
 
 
 def Load_Demo1_Data(file_path):
@@ -70,4 +51,4 @@ def get_textslabels(data, label_id):
 
 def Myloader(texts, labels, tokenizer, batch_size, max_len, shuffle=True):
     dataset = Demo1_Dataset(texts, labels, tokenizer, max_len)
-    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    return DataLoader(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=dataset.collate_fn)
