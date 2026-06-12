@@ -94,7 +94,6 @@ classify-bert-DEMO1/
 │   └── Bert_Config_exp1.json
 ├── model.py                 # 模型结构
 ├── Predict.py               # 预测脚本
-├── Metrics.py               #评估
 ├── trainer.py               # 训练脚本
 ├── utils.py                 # 工具函数
 ├── requirements.txt         # 依赖
